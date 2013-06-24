@@ -1,1 +1,1 @@
-include ':Flocal', ':libforumlocal'
+include ':Flocal'
