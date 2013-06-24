@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/boardEntryUnread"
+            android:layout_gravity="center_horizontal|top"
+            android:enabled="false"
+            android:checked="false"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/boardEntryText"
+            android:layout_gravity="center_horizontal|top"
+            android:text="board-name-stub"/>
+</LinearLayout>
