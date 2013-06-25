@@ -1,3 +1,4 @@
 /.gradle
 /libforumlocal
 /local.properties
+.idea/workspace.xml

@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
@@ -26,6 +27,7 @@ import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLBoard;
 
 public class BoardListActivity extends ForumActivity {
+    ListView boardList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +35,18 @@ public class BoardListActivity extends ForumActivity {
         setContentView(R.layout.activity_board_list);
 		SessionContainer.setPreferences(getPreferences(MODE_PRIVATE));
 		refresh();
+        boardList = (ListView) findViewById(R.id.boardListView);
+        boardList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                FLBoard selectedBoard = (FLBoard)adapterView.getItemAtPosition(i);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
     }
 
 	@Override

@@ -3,7 +3,9 @@
     package="ru.ith.android.flocal"
     android:versionCode="1"
     android:versionName="1.0" >
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <uses-sdk
         android:minSdkVersion="7"
         android:targetSdkVersion="16" />
@@ -14,13 +16,17 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".activities.BoardListActivity"
+            android:name="ru.ith.android.flocal.activities.BoardListActivity"
             android:label="@string/title_activity_board_list" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".activities.ThreadListActivity"
+            android:label="@string/title_activity_thread_list" >
         </activity>
     </application>
 

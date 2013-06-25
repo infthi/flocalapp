@@ -10,7 +10,9 @@
             android:id="@+id/boardEntryUnread"
             android:layout_gravity="center_horizontal|top"
             android:enabled="false"
-            android:checked="false"/>
+            android:checked="false"
+            android:focusableInTouchMode="false"
+            android:focusable="false"/>
 
     <TextView
             android:layout_width="wrap_content"
