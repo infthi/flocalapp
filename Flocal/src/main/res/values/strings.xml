@@ -3,4 +3,12 @@
 
     <string name="app_name">Flocal</string>
     <string name="title_activity_board_list">Flocal</string>
+    <string name="login_menu">Login</string>
+    <string name="logout_menu">Logout</string>
+    <string name="login_dialog_title">Enter credentials</string>
+    <string name="login_dialog_login_default">Login</string>
+    <string name="login_dialog_pass_default">Password</string><string name="login_dialog_OK_button">OK</string>
+    <string name="login_dialog_cancel_button">Cancel</string>
+    <string name="login_dialog_loginning">Logging in...</string>
+    <string name="login_dialog_logging_out">Logging out...</string>
 </resources>
