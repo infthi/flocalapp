@@ -1,20 +1,22 @@
 package ru.ith.lib.flocal.data;
 
-public class FLThread {
+public class FLThreadHeader {
 	private final String name;
 	private final String author;
 	private final int numUnread;
 	private final int numUnreadDisc;
-	private final int ID;
+	private final long ID;
 	private final boolean isPinned;
+    public final String src;
 
-	public FLThread(String name, String author, int numUnread, int numUnreadDisc, int ID, boolean isPinned) {
+	public FLThreadHeader(String name, String author, int numUnread, int numUnreadDisc, long ID, boolean isPinned, String src) {
 		this.name = name;
 		this.author = author;
 		this.numUnread = numUnread;
 		this.numUnreadDisc = numUnreadDisc;
 		this.ID = ID;
 		this.isPinned = isPinned;
+        this.src = src;
 	}
 
 	
@@ -24,7 +26,11 @@ public class FLThread {
 	}
 
 
-	public int getID() {
+	public long getID() {
 		return ID;
 	}
+
+    public String getName() {
+        return name;
+    }
 }

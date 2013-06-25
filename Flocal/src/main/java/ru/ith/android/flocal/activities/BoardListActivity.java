@@ -1,9 +1,11 @@
 package ru.ith.android.flocal.activities;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -36,15 +38,15 @@ public class BoardListActivity extends ForumActivity {
 		SessionContainer.setPreferences(getPreferences(MODE_PRIVATE));
 		refresh();
         boardList = (ListView) findViewById(R.id.boardListView);
-        boardList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        boardList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                FLBoard selectedBoard = (FLBoard)adapterView.getItemAtPosition(i);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                FLBoard selectedBoard = (FLBoard) adapterView.getItemAtPosition(i);
+                Intent intent = new Intent(BoardListActivity.this, ThreadListActivity.class);
+                intent.putExtra(ThreadListActivity.KEY_BOARD, selectedBoard.boardURIName);
+                intent.putExtra(ThreadListActivity.KEY_BOARD_NAME, selectedBoard.boardName);
+                intent.putExtra(ThreadListActivity.KEY_BOARD_SRC, selectedBoard.src);
+                startActivity(intent);
             }
         });
     }

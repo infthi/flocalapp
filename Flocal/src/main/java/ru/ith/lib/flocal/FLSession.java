@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -13,7 +14,8 @@ import org.jsoup.select.Elements;
 
 import ru.ith.lib.flocal.data.FLBoard;
 import ru.ith.lib.flocal.data.FLMessage;
-import ru.ith.lib.flocal.data.FLThread;
+import ru.ith.lib.flocal.data.FLMessageSet;
+import ru.ith.lib.flocal.data.FLThreadHeader;
 import ru.ith.lib.webcrawl.ConnectionFactory;
 import ru.ith.lib.webcrawl.providers.HTMLResponce;
 import ru.ith.lib.webcrawl.providers.ProviderEnum;
@@ -80,6 +82,7 @@ public class FLSession {
 	}
 
 	private HTMLResponce doQuery(String url) throws IOException {
+        System.err.println(url);
 		return (HTMLResponce) ConnectionFactory.doQuery(FLOCAL_HOST, url,
 				sessionCookies, ProviderEnum.HTML);
 	}
@@ -129,6 +132,19 @@ public class FLSession {
 					String name, URIName;
 					name = ((TextNode) textNode).text();
 					String link = e.attr("href");
+
+                    final String src;
+                    int srcBeginning = link.indexOf("src=");
+                    if (srcBeginning>=0){
+                        srcBeginning+=4;
+                        int ending = link.indexOf('&', srcBeginning);
+                        if (ending >= 0)
+                            src = link.substring(srcBeginning, ending);
+                        else
+                            src = link.substring(srcBeginning);
+                    } else
+                    src = null;
+
 					int beginning = link.indexOf("Board=");
 					if (beginning >= 0) {
 						beginning += 6;
@@ -137,7 +153,7 @@ public class FLSession {
 							URIName = link.substring(beginning, ending);
 						else
 							URIName = link.substring(beginning);
-						FLBoard board = new FLBoard(name, URIName, hasUnread);
+						FLBoard board = new FLBoard(name, URIName, hasUnread, src);
 						result.add(board);
 					}
 				}
@@ -148,12 +164,12 @@ public class FLSession {
 		}
 	}
 
-	public LinkedList<FLThread> listThreads(FLBoard board, int page)
+	public LinkedList<FLThreadHeader> listThreads(FLBoard board, int page)
 			throws FLException {
-		LinkedList<FLThread> result = new LinkedList<FLThread>();
+		LinkedList<FLThreadHeader> result = new LinkedList<FLThreadHeader>();
 		try {
 			HTMLResponce mainPage = doQuery("/postlist.php?Board="
-					+ board.boardURIName + "&sb=5&showlite=sl&page=" + page);
+					+ board.boardURIName + "&sb=5&showlite=sl&page=" + page+((board.src==null)?"":("&src="+board.src)));
 			for (Element e : mainPage.getAll("a[href*=showflat.php]")) {
 				int numUnread, numUnreadDisc = 0;
 				boolean isPinned = false;
@@ -220,8 +236,8 @@ public class FLSession {
 						id = link.substring(beginning, ending);
 					else
 						id = link.substring(beginning);
-					FLThread thread = new FLThread(name, author, numUnread, numUnreadDisc, 
-							Integer.valueOf(id), isPinned);
+					FLThreadHeader thread = new FLThreadHeader(name, author, numUnread, numUnreadDisc,
+							Integer.valueOf(id), isPinned, board.src);
 					result.add(thread);
 				}
 			}
@@ -231,12 +247,12 @@ public class FLSession {
 		}
 	}
 
-	public LinkedList<FLMessage> listMessages(FLThread thread, int page)
+	public FLMessageSet listMessages(FLThreadHeader thread, int skip)
 			throws FLException {
 		LinkedList<FLMessage> result = new LinkedList<FLMessage>();
 		try {
-			HTMLResponce mainPage = doQuery("/showflat.php?showlite=l&Number="
-					+ thread.getID());
+                HTMLResponce mainPage = doQuery("/showflat.php?showlite=l&Number="
+					+ thread.getID()+"&tistart="+skip+((thread.src==null)?"":("&src="+thread.src)));
 			for (Element headerElement : mainPage
 					.getAll("td.subjecttable:not([style])")) {
 				String userName, caption, postDate;
@@ -311,7 +327,9 @@ public class FLSession {
 						postHtml.toString(), caption, postDate, rating, ID);
 				result.add(message);
 			}
-			return result;
+
+
+			return new FLMessageSet(thread, result, false);
 		} catch (IOException e) {
 			throw new FLException("Failed to retrieve data", e.getMessage());
 		}

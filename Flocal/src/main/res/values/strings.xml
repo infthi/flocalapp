@@ -15,5 +15,6 @@
     <string name="title_activity_thread_list">Flocal</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="title_activity_post_list_adapter">Flocal</string>
 
 </resources>

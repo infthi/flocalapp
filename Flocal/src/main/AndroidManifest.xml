@@ -25,8 +25,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.ThreadListActivity"
+            android:name="ru.ith.android.flocal.activities.ThreadListActivity"
             android:label="@string/title_activity_thread_list" >
+        </activity>
+        <activity
+            android:name="ru.ith.android.flocal.activities.PostListActivity"
+            android:label="@string/title_activity_post_list_adapter"
+            android:parentActivityName="ru.ith.android.flocal.activities.ThreadListActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ru.ith.android.flocal.activities.ThreadListActivity" />
         </activity>
     </application>
 

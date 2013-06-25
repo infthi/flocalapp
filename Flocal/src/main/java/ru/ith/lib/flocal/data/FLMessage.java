@@ -25,4 +25,11 @@ public class FLMessage {
 				+ rating + "]\n" + text;
 	}
 
+    public long getID() {
+        return ID;
+    }
+
+    public String getPostData() {
+        return text;
+    }
 }
