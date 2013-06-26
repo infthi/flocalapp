@@ -113,6 +113,7 @@ public class PostListAdapter extends EndlessAdapter  {
         }
 
         scrolledToEnd.set(true);
+
         checkerThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -125,7 +126,6 @@ public class PostListAdapter extends EndlessAdapter  {
                     @Override
                     public void run() {
                         restartAppending();
-                        buildTask().execute();
                     }
                 });
             }
