@@ -1,20 +1,27 @@
 package ru.ith.android.flocal.engine;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.commonsware.cwac.endless.EndlessAdapter;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import ru.ith.android.flocal.R;
 import ru.ith.lib.flocal.FLDataLoader;
@@ -27,28 +34,29 @@ import ru.ith.lib.flocal.data.FLThreadHeader;
  */
 public class PostListAdapter extends EndlessAdapter  {
     private final FLThreadHeader thread;
-    private final ArrayAdapter<FLMessage> data;
+    private final ArrayAdapter<FLMessageWrapper> data;
     private final Activity ctxt;
+	private final ListView target;
 
-    public PostListAdapter(FLThreadHeader thread, final Activity ctxt) {
-        super(new ArrayAdapter<FLMessage>(ctxt, R.layout.thread_entry){
+    public PostListAdapter(FLThreadHeader thread, final Activity ctxt, ListView target) {
+        super(new ArrayAdapter<FLMessageWrapper>(ctxt, R.layout.thread_entry){
+			Map<Long, View> cachedMessageViews = new WeakHashMap<Long, View>();
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
-                View row = convertView;
-                if(row == null)
-                {
-                    FLMessage item = getItem(position);
-                    if (item==null)
-                        return getPendingViewImpl(parent);
-                    LayoutInflater inflater = ctxt.getLayoutInflater();
-                    row = inflater.inflate(R.layout.post_entry, parent, false);
-                    ((TextView)row.findViewById(R.id.postEntryText)).setText(Html.fromHtml(item.getPostData()));
-                }
-
-                return row;
-
+				FLMessageWrapper item = getItem(position);
+				if (item.isLoadingStub)
+					return getPendingViewImpl(parent);
+				View result = cachedMessageViews.get(item.message.getID());
+				if (result==null){
+					LayoutInflater inflater = ctxt.getLayoutInflater();
+					result = inflater.inflate(R.layout.post_entry, parent, false);
+					((TextView)result.findViewById(R.id.postEntryText)).setText(Html.fromHtml(item.message.getPostData()));
+					cachedMessageViews.put(item.message.getID(), result);
+				}
+                return result;
             }
         });
+		this.target = target;
         this.ctxt = ctxt;
         this.thread = thread;
         data = (ArrayAdapter) getWrappedAdapter();
@@ -64,6 +72,7 @@ public class PostListAdapter extends EndlessAdapter  {
     int lastLoadedPostKnownOffset = -1;
 
     private LinkedList<FLMessage> posts = new LinkedList<FLMessage>();
+
     @Override
     protected boolean cacheInBackground() throws Exception {
         if (!running.get())
@@ -142,7 +151,7 @@ public class PostListAdapter extends EndlessAdapter  {
         synchronized (posts){
             for (FLMessage post: posts){
                 if (knownPosts.add(post.getID())){
-                    data.add(post);
+                    data.add(new FLMessageWrapper(post));
                 }
             }
             posts.clear();
@@ -169,7 +178,62 @@ public class PostListAdapter extends EndlessAdapter  {
 
     public void upOverScroll() {
         if (!drawnUpPlaceholder.getAndSet(true)){
-            data.insert(null, 0);
+            data.insert(FLMessageWrapper.placeholder, 0);
+			cacheInBackgroundUpper();
         }
     }
+
+	protected boolean cacheInBackgroundUpper() {
+		if (!running.get())
+			return true;
+		new AsyncTask<Void, Void, FLMessageSet>(){
+
+			@Override
+			protected FLMessageSet doInBackground(Void... params) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+				}
+				return null;
+			}
+
+			@Override
+			protected void onPostExecute(FLMessageSet flMessageSet) {
+				if (drawnUpPlaceholder.getAndSet(false)){
+					data.remove(FLMessageWrapper.placeholder);
+					for (int i = 0; i< 10; i++){
+						data.insert(new FLMessageWrapper(new FLMessage("user", "upper message "+i, "cap", "ololo", 0, container.incrementAndGet())), 0);
+					}
+					FLMessageWrapper test = data.getItem(0);
+					int index = target.getFirstVisiblePosition();
+					View v = target.getChildAt(1);
+					int top = (v == null) ? 0 : v.getTop();
+
+					notifyDataSetChanged();
+					target.setSelectionFromTop(index+10, top);
+				}
+			}
+		}.execute();
+		return false;
+	}
+	private  static final AtomicInteger container = new AtomicInteger(0);
+}
+
+
+class FLMessageWrapper{
+
+	public static final FLMessageWrapper placeholder = new FLMessageWrapper();
+	public final FLMessage message;
+	public final boolean isLoadingStub;
+
+	public FLMessageWrapper(FLMessage wrapped){
+		this.message = wrapped;
+		isLoadingStub = false;
+	}
+
+	public  FLMessageWrapper(){
+		isLoadingStub = true;
+		message = null;
+	}
+
 }

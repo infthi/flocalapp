@@ -134,7 +134,7 @@ public class FLDataLoader {
             }
             return result;
         } catch (IOException e) {
-            throw new FLException("Failed to retrieve data", e.getMessage());
+            throw new FLException("Failed to retrieve data", e.getMessage(), e);
         }
     }
 

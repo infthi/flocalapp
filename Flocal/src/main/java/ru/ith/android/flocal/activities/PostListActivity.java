@@ -31,7 +31,7 @@ public class PostListActivity extends ForumActivity {
         FLThreadHeader readThread = new FLThreadHeader(threadName, null, 0, 0, threadID, threadUnreadID, false, threadSrc);
         setTitle(threadName); //TODO: set scrollable
         OverscrollableList postList = (OverscrollableList) findViewById(R.id.postListView);
-        adapter = new PostListAdapter(readThread, this);
+        adapter = new PostListAdapter(readThread, this, postList);
         postList.setAdapter(adapter);
         if (threadUnreadID>=0)
             postList.setOverScrollListener(new overScrollListener() {
