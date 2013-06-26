@@ -3,10 +3,11 @@ package ru.ith.android.flocal.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
-import android.widget.ListView;
 
+import ru.ith.android.flocal.views.OverscrollableList;
 import ru.ith.android.flocal.R;
 import ru.ith.android.flocal.engine.PostListAdapter;
+import ru.ith.android.flocal.views.overScrollListener;
 import ru.ith.lib.flocal.data.FLThreadHeader;
 
 public class PostListActivity extends ForumActivity {
@@ -29,9 +30,18 @@ public class PostListActivity extends ForumActivity {
         String threadSrc =  intent.getStringExtra(KEY_THREAD_SRC);
         FLThreadHeader readThread = new FLThreadHeader(threadName, null, 0, 0, threadID, threadUnreadID, false, threadSrc);
         setTitle(threadName); //TODO: set scrollable
-        ListView postList = (ListView) findViewById(R.id.postListView);
+        OverscrollableList postList = (OverscrollableList) findViewById(R.id.postListView);
         adapter = new PostListAdapter(readThread, this);
         postList.setAdapter(adapter);
+        if (threadUnreadID>=0)
+            postList.setOverScrollListener(new overScrollListener() {
+                @Override
+                public void overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX, int scrollRangeY, int maxOverScrollX, int maxOverScrollY, boolean touchEvent) {
+                    if (deltaY<0){
+                        adapter.upOverScroll();
+                    }
+                }
+            });
         refresh();
     }
 

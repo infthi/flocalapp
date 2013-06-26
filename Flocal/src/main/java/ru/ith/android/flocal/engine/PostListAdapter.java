@@ -37,11 +37,14 @@ public class PostListAdapter extends EndlessAdapter  {
                 View row = convertView;
                 if(row == null)
                 {
+                    FLMessage item = getItem(position);
+                    if (item==null)
+                        return getPendingViewImpl(parent);
                     LayoutInflater inflater = ctxt.getLayoutInflater();
                     row = inflater.inflate(R.layout.post_entry, parent, false);
+                    ((TextView)row.findViewById(R.id.postEntryText)).setText(Html.fromHtml(item.getPostData()));
                 }
-                FLMessage item = getItem(position);
-                ((TextView)row.findViewById(R.id.postEntryText)).setText(Html.fromHtml(item.getPostData()));
+
                 return row;
 
             }
@@ -148,6 +151,9 @@ public class PostListAdapter extends EndlessAdapter  {
 
     @Override
     protected View getPendingView(ViewGroup parent) {
+        return  getPendingViewImpl(parent);
+    }
+    protected static View getPendingViewImpl(ViewGroup parent) {
         TextView result = new TextView(parent.getContext());
         result.setText("Loading...");
         return result;
@@ -157,5 +163,13 @@ public class PostListAdapter extends EndlessAdapter  {
 
     public void setRunning(final boolean isRunning) {
         running.set(isRunning);
+    }
+
+    private AtomicBoolean drawnUpPlaceholder = new AtomicBoolean(false);
+
+    public void upOverScroll() {
+        if (!drawnUpPlaceholder.getAndSet(true)){
+            data.insert(null, 0);
+        }
     }
 }

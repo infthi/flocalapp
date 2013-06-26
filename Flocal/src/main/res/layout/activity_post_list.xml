@@ -9,7 +9,7 @@
     tools:context=".PostListActivity"
     android:id="@id/postEntryText">
 
-    <ListView
+    <ru.ith.android.flocal.views.OverscrollableList
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"

@@ -262,7 +262,7 @@ public class FLDataLoader {
                         if (pagesSplit>0){
                             headerText = "|"+headerText.substring(pagesSplit+1);
                         }
-                        if ((headerText.length()>1)&&headerText.startsWith("|")&&headerText.endsWith("|")){
+                        if ((headerText.length()>2)&&headerText.startsWith("|")&&headerText.endsWith("|")){
                             int extra = 1;
                             if (headerText.charAt(1)=='(')
                                 extra++;
