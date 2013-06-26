@@ -5,6 +5,7 @@ import android.text.Editable;
 
 import java.util.prefs.Preferences;
 
+import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.FLSession;
 
@@ -41,7 +42,11 @@ public class SessionContainer {
 		return instance;
 	}
 
-	public FLSession getSession() {
+    public static FLSession getSessionInstance() throws FLException {
+        return getInstance().getSession();
+    }
+
+	public synchronized FLSession getSession() {
 		return session;
 	}
 
@@ -54,10 +59,10 @@ public class SessionContainer {
 		setSession(new FLSession(user, pass));
 	}
 
-	public void logout(){
+	public synchronized void logout(){
 		if (!isAnonymousSession())
 			try {
-				session.logout();
+				FLDataLoader.logout(session);
 				setSession(FLSession.makeAnonymousSession());
 			} catch (FLException e) {
 			}

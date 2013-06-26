@@ -38,6 +38,7 @@ public class ThreadListActivity extends ForumActivity {
                 FLThreadHeader selectedThread = (FLThreadHeader) adapterView.getItemAtPosition(i);
                 Intent intent = new Intent(ThreadListActivity.this, PostListActivity.class);
                 intent.putExtra(PostListActivity.KEY_THREAD, selectedThread.getID());
+                intent.putExtra(PostListActivity.KEY_THREAD_UNREAD, selectedThread.getUnreadID());
                 intent.putExtra(PostListActivity.KEY_THREAD_NAME, selectedThread.getName());
                 intent.putExtra(PostListActivity.KEY_THREAD_SRC, selectedThread.src);
                 startActivity(intent);

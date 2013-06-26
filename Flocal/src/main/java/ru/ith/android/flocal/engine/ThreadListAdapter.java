@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import ru.ith.android.flocal.R;
+import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.data.FLBoard;
 import ru.ith.lib.flocal.data.FLThreadHeader;
 
@@ -53,7 +54,7 @@ public class ThreadListAdapter extends EndlessAdapter  {
     @Override
     protected boolean cacheInBackground() throws Exception {
         synchronized (threads){
-            threads = SessionContainer.getInstance().getSession().listThreads(board, currentPage++);
+            threads = FLDataLoader.listThreads(SessionContainer.getSessionInstance(), board, currentPage++);
         }
         return true;
     }

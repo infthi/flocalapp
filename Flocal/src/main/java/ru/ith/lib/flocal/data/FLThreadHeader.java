@@ -5,16 +5,17 @@ public class FLThreadHeader {
 	private final String author;
 	private final int numUnread;
 	private final int numUnreadDisc;
-	private final long ID;
+	private final long ID, firstUnreadID;
 	private final boolean isPinned;
     public final String src;
 
-	public FLThreadHeader(String name, String author, int numUnread, int numUnreadDisc, long ID, boolean isPinned, String src) {
+	public FLThreadHeader(String name, String author, int numUnread, int numUnreadDisc, long ID, long unreadID, boolean isPinned, String src) {
 		this.name = name;
 		this.author = author;
 		this.numUnread = numUnread;
 		this.numUnreadDisc = numUnreadDisc;
 		this.ID = ID;
+        this.firstUnreadID = unreadID;
 		this.isPinned = isPinned;
         this.src = src;
 	}
@@ -32,5 +33,9 @@ public class FLThreadHeader {
 
     public String getName() {
         return name;
+    }
+
+    public long getUnreadID() {
+        return firstUnreadID;
     }
 }

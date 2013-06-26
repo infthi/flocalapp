@@ -12,6 +12,7 @@ import ru.ith.lib.flocal.data.FLThreadHeader;
 public class PostListActivity extends ForumActivity {
 
     public static final String KEY_THREAD = "thread";
+    public static final String KEY_THREAD_UNREAD = "threadUnreadID";
     public static final String KEY_THREAD_NAME = "threadName";
     public static final String KEY_THREAD_SRC = "threadSrc";
     private PostListAdapter adapter;
@@ -23,9 +24,10 @@ public class PostListActivity extends ForumActivity {
         Intent intent = getIntent();
 
         long threadID = intent.getLongExtra(KEY_THREAD, -1);
+        long threadUnreadID = intent.getLongExtra(KEY_THREAD_UNREAD, -1);
         String threadName = intent.getStringExtra(KEY_THREAD_NAME);
         String threadSrc =  intent.getStringExtra(KEY_THREAD_SRC);
-        FLThreadHeader readThread = new FLThreadHeader(threadName, null, 0, 0, threadID, false, threadSrc);
+        FLThreadHeader readThread = new FLThreadHeader(threadName, null, 0, 0, threadID, threadUnreadID, false, threadSrc);
         setTitle(threadName); //TODO: set scrollable
         ListView postList = (ListView) findViewById(R.id.postListView);
         adapter = new PostListAdapter(readThread, this);
@@ -45,8 +47,14 @@ public class PostListActivity extends ForumActivity {
     }
 
     @Override
-    protected void onStop() {
+    protected void onPause() {
         super.onStop();
-        adapter.stopAppending();
+        adapter.setRunning(false);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        adapter.setRunning(true);
     }
 }

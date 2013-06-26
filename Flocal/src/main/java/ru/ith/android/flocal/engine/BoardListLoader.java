@@ -18,6 +18,7 @@ import java.util.List;
 
 import ru.ith.android.flocal.R;
 import ru.ith.android.flocal.activities.BoardListActivity;
+import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLBoard;
 
@@ -34,7 +35,7 @@ public class BoardListLoader extends AsyncTask<Void, Void, List<FLBoard>> {
     @Override
     protected List<FLBoard> doInBackground(Void... voids) {
         try {
-            return SessionContainer.getInstance().getSession().listBoards();
+            return FLDataLoader.listBoards(SessionContainer.getSessionInstance());
         } catch (FLException e) {
             Log.e("FL", e.toString(), e);
         }

@@ -17,6 +17,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.ith.android.flocal.R;
+import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.data.FLMessage;
 import ru.ith.lib.flocal.data.FLMessageSet;
 import ru.ith.lib.flocal.data.FLThreadHeader;
@@ -46,20 +47,23 @@ public class PostListAdapter extends EndlessAdapter  {
             }
         });
         this.ctxt = ctxt;
-        data = (ArrayAdapter) getWrappedAdapter();
         this.thread = thread;
+        data = (ArrayAdapter) getWrappedAdapter();
         knownPosts.clear();
 
     }
 
     Set<Long> knownPosts = new TreeSet<Long>();
-    int currentPost = 0;
+    int currentPostID = 0;
     private AtomicBoolean scrolledToEnd = new AtomicBoolean(false);
+    public Thread checkerThread = null;
 
     private LinkedList<FLMessage> posts = new LinkedList<FLMessage>();
     @Override
     protected boolean cacheInBackground() throws Exception {
-        FLMessageSet gotPosts = SessionContainer.getInstance().getSession().listMessages(thread, currentPost);
+        if (!running.get())
+            return true;
+        FLMessageSet gotPosts = FLDataLoader.listMessages(SessionContainer.getSessionInstance(), thread, currentPostID);
         synchronized (posts){
             posts = gotPosts.getPosts();
             if (!posts.isEmpty())
@@ -72,19 +76,20 @@ public class PostListAdapter extends EndlessAdapter  {
                     });
         }
 
-        currentPost=gotPosts.getOffset()+gotPosts.getPosts().size();
+        currentPostID =gotPosts.getOffset()+gotPosts.getPosts().size();
 
         if (gotPosts.hasMoreData()){
             return true;
         }
 
         scrolledToEnd.set(true);
-        new Thread(new Runnable() {
+        checkerThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     Thread.sleep(10000);
                 } catch (InterruptedException e) {
+                    return;
                 }
                 ctxt.runOnUiThread(new Runnable() {
                     @Override
@@ -94,7 +99,8 @@ public class PostListAdapter extends EndlessAdapter  {
                     }
                 });
             }
-        }).start();
+        });
+        checkerThread.start();
         return false;
     }
 
@@ -115,5 +121,11 @@ public class PostListAdapter extends EndlessAdapter  {
         TextView result = new TextView(parent.getContext());
         result.setText("Loading...");
         return result;
+    }
+
+    private AtomicBoolean running = new AtomicBoolean(true);
+
+    public void setRunning(boolean isRunning) {
+        running.set(isRunning);
     }
 }
