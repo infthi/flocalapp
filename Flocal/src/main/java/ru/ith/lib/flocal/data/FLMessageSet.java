@@ -10,12 +10,13 @@ public class FLMessageSet {
     private final LinkedList<FLMessage> messages;
     private final boolean hasMoreData;
     private final int offset;
+    public volatile String URL = null;
 
-    public FLMessageSet(FLThreadHeader threadHeader, LinkedList<FLMessage> messages, boolean hasMoreData) {
+    public FLMessageSet(FLThreadHeader threadHeader, LinkedList<FLMessage> messages, boolean hasMoreData, int threadOffset) {
         this.threadHeader = threadHeader;
         this.messages = messages;
         this.hasMoreData = hasMoreData;
-        this.offset = 0;
+        this.offset = threadOffset;
     }
 
     public LinkedList<FLMessage> getPosts() {
@@ -27,7 +28,7 @@ public class FLMessageSet {
         return hasMoreData;
     }
 
-    public int getOffset() {
+    public int getEffectiveOffset() {
         return offset;
     }
 }

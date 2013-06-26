@@ -238,18 +238,70 @@ public class FLDataLoader {
             throws FLException {
         LinkedList<FLMessage> result = new LinkedList<FLMessage>();
         try {
-            HTMLResponce mainPage = doQuery("/showflat.php?showlite=l&Number="
-                    + thread.getID()+"&tistart="+skip+((thread.src==null)?"":("&src="+thread.src)), session);
-            for (Element headerElement : mainPage
+            long loadID = thread.getID();
+
+            int threadOffset = 0;
+            boolean hasMorePages = false;
+
+            if (loadID<0)
+                loadID = thread.getUnreadID();
+            String URL = "/showflat.php?showlite=l&Number="+ loadID
+                    +((skip>0)?("&tistart="+skip):"")
+                    +((thread.src==null)?"":("&src="+thread.src));
+            HTMLResponce mainPage = doQuery(URL, session);
+
+            boolean wasCounter = false;
+            for (Element threadHeaderElement: mainPage.getAll("table > tbody> tr > td > a + br + br")){
+                Node pageNavigationElement = threadHeaderElement.nextSibling(); //Pages:
+                while (pageNavigationElement!=null){
+                    boolean thisCounter = false;
+                    if (pageNavigationElement instanceof TextNode){
+                        String headerText = ((TextNode) pageNavigationElement).text().replaceAll(" ","");
+
+                        int pagesSplit = headerText.indexOf(':');
+                        if (pagesSplit>0){
+                            headerText = "|"+headerText.substring(pagesSplit+1);
+                        }
+                        if ((headerText.length()>1)&&headerText.startsWith("|")&&headerText.endsWith("|")){
+                            int extra = 1;
+                            if (headerText.charAt(1)=='(')
+                                extra++;
+                            headerText = headerText.substring(extra, headerText.length()-extra);
+                            threadOffset = Integer.valueOf(headerText);
+                            thisCounter = true;
+                        }
+                    } else if (wasCounter&&pageNavigationElement.nodeName().equals("a")){
+                        String href = pageNavigationElement.attr("href");
+                        int tiStartIndex = href.indexOf("tistart=");
+                        if (tiStartIndex>=0){
+                            tiStartIndex+=8;
+
+                            final String tistart;
+                            int tiStartEnd = href.indexOf("&", tiStartIndex);
+                            if (tiStartEnd>=0)
+                                tistart = href.substring(tiStartIndex, tiStartEnd);
+                            else
+                                tistart = href.substring(tiStartIndex);
+
+                            if (!tistart.equals("all"))
+                                hasMorePages = true;
+                        }
+                    }
+                    wasCounter = thisCounter;
+                    pageNavigationElement = pageNavigationElement.nextSibling();
+                }
+            }
+
+            for (Element mesageHeaderElement : mainPage
                     .getAll("td.subjecttable:not([style])")) {
                 String userName, caption, postDate;
                 int rating = 0;
-                long ID;
+                long messageID;
                 StringBuilder postHtml = new StringBuilder();
 
-                Node linkNode = headerElement.childNode(0);
+                Node linkNode = mesageHeaderElement.childNode(0);
                 if (linkNode.nodeName().equalsIgnoreCase("a")) {
-                    ID = Long.valueOf(linkNode.attr("name").substring(4));
+                    messageID = Long.valueOf(linkNode.attr("name").substring(4));
                 } else
                     continue;
 
@@ -287,7 +339,7 @@ public class FLDataLoader {
                 } else
                     continue;
 
-                Element ratingNodeContainer = headerElement
+                Element ratingNodeContainer = mesageHeaderElement
                         .nextElementSibling();
                 if (ratingNodeContainer.childNodeSize()>0){
                     Node ratingNodeSpan = ratingNodeContainer.childNode(0);
@@ -303,7 +355,7 @@ public class FLDataLoader {
                 } else
                     continue;
 
-                Element textContainer = headerElement.parent()
+                Element textContainer = mesageHeaderElement.parent()
                         .nextElementSibling();
                 if (textContainer.children().size() > 0)
                     postHtml.append(textContainer.child(0).html());
@@ -311,12 +363,14 @@ public class FLDataLoader {
                     continue;
 
                 FLMessage message = new FLMessage(userName,
-                        postHtml.toString(), caption, postDate, rating, ID);
+                        postHtml.toString(), caption, postDate, rating, messageID);
                 result.add(message);
             }
 
 
-            return new FLMessageSet(thread, result, false);
+            FLMessageSet resultSet = new FLMessageSet(thread, result, hasMorePages, threadOffset);
+            resultSet.URL = URL;
+            return resultSet;
         } catch (IOException e) {
             throw new FLException("Failed to retrieve data", e.getMessage());
         }

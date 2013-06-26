@@ -9,7 +9,8 @@ import java.util.TreeMap;
 public class WebResponceMetadata {
 	public static final int HTTP_OK = 200;
 	public static final int MOVED_PERMANENTLY = 301;
-	
+    public static final int FOUND = 302;
+
 	private int headerCount = 0;
 	private String method;
 	private int HTTPCode;

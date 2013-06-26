@@ -54,29 +54,59 @@ public class PostListAdapter extends EndlessAdapter  {
     }
 
     Set<Long> knownPosts = new TreeSet<Long>();
-    int currentPostID = 0;
     private AtomicBoolean scrolledToEnd = new AtomicBoolean(false);
     public Thread checkerThread = null;
+
+    private FLMessage lastLoadedPost = null;
+    int lastLoadedPostKnownOffset = -1;
 
     private LinkedList<FLMessage> posts = new LinkedList<FLMessage>();
     @Override
     protected boolean cacheInBackground() throws Exception {
         if (!running.get())
             return true;
-        FLMessageSet gotPosts = FLDataLoader.listMessages(SessionContainer.getSessionInstance(), thread, currentPostID);
+
+        boolean success = false;
+
+        FLMessageSet gotPosts = null;
+        while (!success){
+            gotPosts = FLDataLoader.listMessages(SessionContainer.getSessionInstance(), thread, lastLoadedPostKnownOffset);
+            if ((lastLoadedPostKnownOffset<=0)||(gotPosts.getEffectiveOffset()>0)){ //if effective offset is 0 then we requested too large lastKnownOffset.
+                if (lastLoadedPost == null) {
+                    success = true;
+                } else {
+                    LinkedList<FLMessage> posts = gotPosts.getPosts();
+                    remover:
+                    while (!posts.isEmpty())
+                        if (posts.removeFirst().getID() == lastLoadedPost.getID()) {
+                            success = true;
+                            break remover;
+                        } else {
+                            lastLoadedPostKnownOffset++;
+                        }
+                }
+                if (!success)
+                    lastLoadedPostKnownOffset = gotPosts.getEffectiveOffset()-10;
+            } else
+                lastLoadedPostKnownOffset-=10;
+
+        }
+
         synchronized (posts){
-            posts = gotPosts.getPosts();
-            if (!posts.isEmpty())
+            if (posts.addAll(gotPosts.getPosts()))
                 if (scrolledToEnd.getAndSet(false))
                     ctxt.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(ctxt, "New posts appeared", Toast.LENGTH_LONG).show();//TODO: move to resource
+                            Toast.makeText(ctxt, "New posts appeared: "+posts.size(), Toast.LENGTH_LONG).show();//TODO: move to resource
                         }
                     });
         }
 
-        currentPostID =gotPosts.getOffset()+gotPosts.getPosts().size();
+        if (!gotPosts.getPosts().isEmpty()){
+            lastLoadedPost = gotPosts.getPosts().getLast();
+            lastLoadedPostKnownOffset = lastLoadedPostKnownOffset+gotPosts.getPosts().size();
+        }
 
         if (gotPosts.hasMoreData()){
             return true;
@@ -125,7 +155,7 @@ public class PostListAdapter extends EndlessAdapter  {
 
     private AtomicBoolean running = new AtomicBoolean(true);
 
-    public void setRunning(boolean isRunning) {
+    public void setRunning(final boolean isRunning) {
         running.set(isRunning);
     }
 }
