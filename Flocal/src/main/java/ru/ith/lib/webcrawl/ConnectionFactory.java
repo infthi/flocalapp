@@ -35,6 +35,7 @@ public class ConnectionFactory {
 	public static WebResponceReader doQueryMain(String host, String url, Map<String, String> cookies,
 			byte[] postData, String postContentType, ProviderEnum requestType) throws IOException {
 		Socket listener = getConnection(host);
+
 		OutputStream os = listener.getOutputStream();
 
 		os.write((((postData != null) ? "POST " : "GET ") + url + " HTTP/1.0\n")

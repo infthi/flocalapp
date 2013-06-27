@@ -246,7 +246,7 @@ public class FLDataLoader {
             if (loadID<0)
                 loadID = thread.getUnreadID();
             String URL = "/showflat.php?showlite=l&Number="+ loadID
-                    +((skip>0)?("&tistart="+skip):"")
+                    +((skip>=0)?("&tistart="+skip):"")
                     +((thread.src==null)?"":("&src="+thread.src));
             HTMLResponce mainPage = doQuery(URL, session);
 
