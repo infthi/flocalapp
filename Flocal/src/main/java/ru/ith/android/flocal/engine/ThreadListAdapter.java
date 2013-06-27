@@ -47,14 +47,14 @@ public class ThreadListAdapter extends EndlessAdapter  {
 
     }
 
-    Set<Long> knownThreads = new TreeSet<Long>();
+    Set<FLThreadHeader> knownThreads = new TreeSet<FLThreadHeader>();
     int currentPage = 0;
 
     private LinkedList<FLThreadHeader> threads = new LinkedList<FLThreadHeader>();
     @Override
     protected boolean cacheInBackground() throws Exception {
         synchronized (threads){
-            threads = FLDataLoader.listThreads(SessionContainer.getSessionInstance(), board, currentPage++);
+            threads.addAll(FLDataLoader.listThreads(SessionContainer.getSessionInstance(), board, currentPage++));
         }
         return true;
     }
@@ -63,7 +63,7 @@ public class ThreadListAdapter extends EndlessAdapter  {
     protected void appendCachedData() {
         synchronized (threads){
             for (FLThreadHeader thread: threads){
-                if (knownThreads.add(thread.getID())){
+                if (knownThreads.add(thread)){
                     data.add(thread);
                 }
             }
