@@ -291,6 +291,7 @@ public class FLDataLoader {
                     wasCounter = thisCounter;
                     pageNavigationElement = pageNavigationElement.nextSibling();
                 }
+                break;
             }
 
             for (Element mesageHeaderElement : mainPage

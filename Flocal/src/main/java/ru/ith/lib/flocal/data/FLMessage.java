@@ -32,4 +32,8 @@ public class FLMessage {
     public String getPostData() {
         return text;
     }
+
+    public CharSequence getAuthor() {
+        return userName;
+    }
 }

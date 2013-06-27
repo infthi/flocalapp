@@ -1,6 +1,7 @@
 package ru.ith.android.flocal.engine;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.text.Html;
 import android.view.LayoutInflater;
@@ -13,7 +14,6 @@ import android.widget.Toast;
 
 import com.commonsware.cwac.endless.EndlessAdapter;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -36,7 +36,7 @@ public class PostListAdapter extends EndlessAdapter  {
     private final Activity ctxt;
 	private final ListView target;
 
-    public PostListAdapter(FLThreadHeader thread, final Activity ctxt, ListView target) {
+    public PostListAdapter(FLThreadHeader thread, final Activity ctxt, final ListView target) {
         super(new ArrayAdapter<FLMessageWrapper>(ctxt, R.layout.thread_entry){
 			Map<Long, View> cachedMessageViews = new WeakHashMap<Long, View>();
             @Override
@@ -46,9 +46,9 @@ public class PostListAdapter extends EndlessAdapter  {
 					return getPendingViewImpl(parent);
 				View result = cachedMessageViews.get(item.message.getID());
 				if (result==null){
-					LayoutInflater inflater = ctxt.getLayoutInflater();
-					result = inflater.inflate(R.layout.post_entry, parent, false);
-					((TextView)result.findViewById(R.id.postEntryText)).setText(Html.fromHtml(item.message.getPostData()));
+                    result = ctxt.getLayoutInflater().inflate(R.layout.post_entry, null, false);
+                    ((TextView)result.findViewById(R.id.postEntryText)).setText(Html.fromHtml(item.message.getPostData()));
+//                    ((TextView)result.findViewById(R.id.postEntryAuthor)).setText(item.message.getAuthor());
 					cachedMessageViews.put(item.message.getID(), result);
 				}
                 return result;
