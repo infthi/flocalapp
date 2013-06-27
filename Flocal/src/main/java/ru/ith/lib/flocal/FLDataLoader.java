@@ -7,6 +7,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -357,8 +358,18 @@ public class FLDataLoader {
 
                 Element textContainer = mesageHeaderElement.parent()
                         .nextElementSibling();
-                if (textContainer.children().size() > 0)
-                    postHtml.append(textContainer.child(0).html());
+                if (textContainer.children().size() > 0){
+                    Element textElement = textContainer.child(0);
+                    List<Node> children = textElement.childNodes();
+                    for (int i = children.size()-1; i>=0; i--){
+                        Node lastNode = children.get(i);
+                        if (lastNode.nodeName().equals("br"))
+                            lastNode.remove();
+                        else
+                            break;
+                    }
+                    postHtml.append(textElement.html());
+                }
                 else
                     continue;
 
