@@ -1,10 +1,9 @@
 package ru.ith.android.flocal.engine;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.text.Html;
-import android.view.LayoutInflater;
+import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -36,7 +35,7 @@ public class PostListAdapter extends EndlessAdapter  {
     private final Activity ctxt;
 	private final ListView target;
 
-    public PostListAdapter(FLThreadHeader thread, final Activity ctxt, final ListView target) {
+    public PostListAdapter(FLThreadHeader thread, final Activity ctxt, final ListView target, final Html.ImageGetter imageGetter, final Html.TagHandler tagHandler) {
         super(new ArrayAdapter<FLMessageWrapper>(ctxt, R.layout.thread_entry){
 			Map<Long, View> cachedMessageViews = new WeakHashMap<Long, View>();
             @Override
@@ -47,8 +46,8 @@ public class PostListAdapter extends EndlessAdapter  {
 				View result = cachedMessageViews.get(item.message.getID());
 				if (result==null){
                     result = ctxt.getLayoutInflater().inflate(R.layout.post_entry, null, false);
-                    ((TextView)result.findViewById(R.id.postEntryText)).setText(Html.fromHtml(item.message.getPostData()));
-//                    ((TextView)result.findViewById(R.id.postEntryAuthor)).setText(item.message.getAuthor());
+                    ((TextView)result.findViewById(R.id.postEntryText)).setText(Html.fromHtml(item.message.getPostData(), imageGetter, tagHandler));
+                    ((TextView)result.findViewById(R.id.postEntryAuthor)).setText(item.message.getAuthor());
 					cachedMessageViews.put(item.message.getID(), result);
 				}
                 return result;

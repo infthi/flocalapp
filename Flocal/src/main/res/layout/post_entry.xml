@@ -5,9 +5,36 @@
         android:layout_height="fill_parent"
         xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <TextView
+    <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@id/postEntryText"
-            android:layout_gravity="center_horizontal|top"/>
+            android:id="@id/postEntryAvatar"
+            android:layout_gravity="center_horizontal|top"
+            android:maxWidth="96dp"
+            android:minWidth="96dp"
+            android:maxHeight="96dp"/>
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_gravity="center_horizontal|top">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Text"
+                android:id="@id/postEntryAuthor"
+                android:layout_gravity="left|center_vertical"
+                android:textStyle="bold"
+                android:layout_marginLeft="10dp"/>
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Text"
+                android:id="@id/postEntryText"/>
+    </LinearLayout>
+
 </LinearLayout>

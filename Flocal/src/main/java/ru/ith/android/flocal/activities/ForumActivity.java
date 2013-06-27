@@ -17,6 +17,7 @@ import android.widget.Toast;
 import java.util.concurrent.Semaphore;
 
 import ru.ith.android.flocal.R;
+import ru.ith.android.flocal.engine.MessageProcessor;
 import ru.ith.android.flocal.engine.SessionContainer;
 import ru.ith.lib.flocal.FLException;
 
@@ -33,7 +34,7 @@ public abstract class ForumActivity extends Activity {
 			else
 				menu.add(0,1,1, getString(R.string.logout_menu));
 		} catch (FLException e) {
-			Toast.makeText(this, e.getMessage(), 3);
+			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
 			menu.add(0,1,1, e.getMessage()).setEnabled(false);
 			Log.e("FL", e.getMessage());
 		}
@@ -149,4 +150,11 @@ public abstract class ForumActivity extends Activity {
 	}
 
 	abstract void refresh();
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MessageProcessor.instance.setContext(this);
+    }
 }
