@@ -67,8 +67,8 @@ public class PostListAdapter extends EndlessAdapter  {
     private AtomicBoolean scrolledToEnd = new AtomicBoolean(false);
     public Thread checkerThread = null;
 
-    private FLMessage lastLoadedPost = null;
     int lastLoadedPostKnownOffset = -1;
+    int firstLoadedPostKnownOffset = -1;
 
     private LinkedList<FLMessage> posts = new LinkedList<FLMessage>();
 
@@ -83,21 +83,48 @@ public class PostListAdapter extends EndlessAdapter  {
         while (!success){
             gotPosts = FLDataLoader.listMessages(SessionContainer.getSessionInstance(), thread, lastLoadedPostKnownOffset);
             if ((lastLoadedPostKnownOffset<=0)||(gotPosts.getEffectiveOffset()>0)){ //if effective offset is 0 then we requested too large lastKnownOffset.
-                if (lastLoadedPost == null) {
+                if (lastKnownPost == -1) {
                     success = true;
+                    firstLoadedPostKnownOffset = gotPosts.getEffectiveOffset();
+                    firstKnownPost = gotPosts.getPosts().getFirst().getID();
+                    lastLoadedPostKnownOffset = firstLoadedPostKnownOffset+gotPosts.getPosts().size()-1;
+                    lastKnownPost = gotPosts.getPosts().getLast().getID();
                 } else {
                     LinkedList<FLMessage> posts = gotPosts.getPosts();
-                    remover:
-                    while (!posts.isEmpty())
-                        if (posts.removeFirst().getID() == lastLoadedPost.getID()) {
-                            success = true;
-                            break remover;
+                    boolean foundNewPostsOnPage = false;
+                    boolean foundOldPostsOnPage = false;
+
+                    if (posts.getFirst().getID()>lastKnownPost){
+                        //this page does not contain last post we loaded: so some posts were deleted,
+                        //and possibly we missed some posts between pages. let's load some earlier posts
+                        lastLoadedPostKnownOffset -= 10;
+                        continue;
+                    }
+                    if (posts.getLast().getID()<=lastKnownPost){
+                        if (posts.size()>1){
+                            //this page contains only posts before last post we knew. let's load future pages
+                            //to get some newer posts we have not read yet
+                            lastLoadedPostKnownOffset += posts.size()-1;
+                            continue;
                         } else {
-                            lastLoadedPostKnownOffset++;
+                            //this page contains only last known post: nothing new appeared
+                            posts.clear(); //let's remove it since we already cached it
+                            break;
                         }
+                    }
+
+                    //this page definitely contains some new posts; let's fetch em
+                    lastLoadedPostKnownOffset = gotPosts.getEffectiveOffset()+posts.size()-1-5;
+                    success = true;
+                    remover:
+                    while (!posts.isEmpty()){
+                        if (posts.getFirst().getID()<=lastKnownPost)
+                            posts.removeFirst();
+                        else
+                            break remover;
+                    }
+                    lastKnownPost = posts.getLast().getID();
                 }
-                if (!success)
-                    lastLoadedPostKnownOffset = gotPosts.getEffectiveOffset()-10;
             } else
                 lastLoadedPostKnownOffset-=10;
 
@@ -114,31 +141,30 @@ public class PostListAdapter extends EndlessAdapter  {
                     });
         }
 
-        if (!gotPosts.getPosts().isEmpty()){
-            lastLoadedPost = gotPosts.getPosts().getLast();
-            lastLoadedPostKnownOffset = lastLoadedPostKnownOffset+gotPosts.getPosts().size();
-        }
-
         if (gotPosts.hasMoreData()){
             return true;
         }
 
         scrolledToEnd.set(true);
 
+        if (checkerThread!=null)
+            checkerThread.interrupt();
         checkerThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(10000);
+                    Thread.sleep(3000);
                 } catch (InterruptedException e) {
                     return;
                 }
-                ctxt.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        restartAppending();
-                    }
-                });
+                if (running.get())
+                    ctxt.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            restartAppending();
+                            getView(getCount()-1, null, null); //since we restarted appending, getcount will return num of posts + 1 for "loading" item. we must substract this "loading" item
+                        }
+                    });
             }
         });
         checkerThread.start();
@@ -149,10 +175,7 @@ public class PostListAdapter extends EndlessAdapter  {
     protected void appendCachedData() {
         synchronized (posts){
             for (FLMessage post: posts){
-                if (post.getID()>lastKnownPost){
                     data.add(new FLMessageWrapper(post));
-                    lastKnownPost = post.getID();
-                }
             }
             posts.clear();
         }
@@ -160,6 +183,8 @@ public class PostListAdapter extends EndlessAdapter  {
 
     @Override
     protected View getPendingView(ViewGroup parent) {
+        if (parent==null)
+            return null;
         return  getPendingViewImpl(parent);
     }
     protected static View getPendingViewImpl(ViewGroup parent) {
