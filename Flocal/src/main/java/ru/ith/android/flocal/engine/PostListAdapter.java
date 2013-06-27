@@ -59,12 +59,11 @@ public class PostListAdapter extends EndlessAdapter  {
 		this.target = target;
         this.ctxt = ctxt;
         this.thread = thread;
+        this.firstKnownPost = thread.getUnreadID();
         data = (ArrayAdapter) getWrappedAdapter();
-        knownPosts.clear();
-
     }
 
-    Set<Long> knownPosts = new TreeSet<Long>();
+    private long firstKnownPost = -1l, lastKnownPost = -1l;
     private AtomicBoolean scrolledToEnd = new AtomicBoolean(false);
     public Thread checkerThread = null;
 
@@ -150,8 +149,9 @@ public class PostListAdapter extends EndlessAdapter  {
     protected void appendCachedData() {
         synchronized (posts){
             for (FLMessage post: posts){
-                if (knownPosts.add(post.getID())){
+                if (post.getID()>lastKnownPost){
                     data.add(new FLMessageWrapper(post));
+                    lastKnownPost = post.getID();
                 }
             }
             posts.clear();
