@@ -3,10 +3,14 @@ package ru.ith.android.flocal.engine;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.text.Html;
+import android.text.Spannable;
+import android.text.method.BaseMovementMethod;
 import android.text.method.LinkMovementMethod;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ru.ith.android.flocal.R;
+import ru.ith.android.flocal.io.ImageFactory;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLMessage;
@@ -35,7 +40,7 @@ public class PostListAdapter extends EndlessAdapter  {
     private final Activity ctxt;
 	private final ListView target;
 
-    public PostListAdapter(FLThreadHeader thread, final Activity ctxt, final ListView target, final Html.ImageGetter imageGetter, final Html.TagHandler tagHandler) {
+    public PostListAdapter(FLThreadHeader thread, final Activity ctxt, final ListView target, final ImageFactory imageGetter, final Html.TagHandler tagHandler) {
         super(new ArrayAdapter<FLMessageWrapper>(ctxt, R.layout.thread_entry){
 			Map<Long, View> cachedMessageViews = new WeakHashMap<Long, View>();
             @Override
@@ -48,6 +53,7 @@ public class PostListAdapter extends EndlessAdapter  {
                     result = ctxt.getLayoutInflater().inflate(R.layout.post_entry, null, false);
                     ((TextView)result.findViewById(R.id.postEntryText)).setText(Html.fromHtml(item.message.getPostData(), imageGetter, tagHandler));
                     ((TextView)result.findViewById(R.id.postEntryAuthor)).setText(item.message.getAuthor());
+					imageGetter.getAvatar(item.message.getAuthor(), ((ImageView)result.findViewById(R.id.postEntryAvatar)));
 					cachedMessageViews.put(item.message.getID(), result);
 				}
                 return result;

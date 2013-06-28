@@ -33,7 +33,7 @@ public class FLMessage {
         return text;
     }
 
-    public CharSequence getAuthor() {
+    public String getAuthor() {
         return userName;
     }
 }

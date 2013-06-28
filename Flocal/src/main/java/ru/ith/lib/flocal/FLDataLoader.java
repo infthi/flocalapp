@@ -388,4 +388,19 @@ public class FLDataLoader {
         }
     }
 
+	public static String getAvatarURL(FLSession session, String user) throws FLException {
+		try {
+			String URL = "/showprofile.php?showlite=sl&User="+ user;
+			HTMLResponce mainPage = doQuery(URL, session);
+
+			for (Element img: mainPage.getAll("td > img[alt]")){
+				if (img.attr("src").startsWith("/user/"))
+					return "http://"+FLOCAL_HOST+img.attr("src");
+				return null;
+			}
+			return null;
+		} catch (IOException e) {
+			throw new FLException("Failed to retrieve data", e.getMessage());
+		}
+	}
 }

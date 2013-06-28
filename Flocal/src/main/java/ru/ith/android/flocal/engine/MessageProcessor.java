@@ -12,7 +12,7 @@ import ru.ith.android.flocal.R;
 /**
  * Created by infthi on 6/27/13.
  */
-public class MessageProcessor implements Html.TagHandler, Html.ImageGetter {
+public class MessageProcessor implements Html.TagHandler {
     public static final MessageProcessor instance = new MessageProcessor();
 
     public void setContext(Context context) {
@@ -24,10 +24,5 @@ public class MessageProcessor implements Html.TagHandler, Html.ImageGetter {
     @Override
     public void handleTag(boolean opening, String tag, Editable output, XMLReader xmlReader) {
 
-    }
-
-    @Override
-    public Drawable getDrawable(String source) {
-        return context.getResources().getDrawable(R.drawable.ic_launcher);
     }
 }

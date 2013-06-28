@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 
 import ru.ith.android.flocal.engine.MessageProcessor;
+import ru.ith.android.flocal.io.ImageFactory;
 import ru.ith.android.flocal.views.OverscrollableList;
 import ru.ith.android.flocal.R;
 import ru.ith.android.flocal.engine.PostListAdapter;
@@ -32,7 +33,7 @@ public class PostListActivity extends ForumActivity {
         FLThreadHeader readThread = new FLThreadHeader(threadName, null, 0, 0, threadID, threadUnreadID, false, threadSrc);
         setTitle(threadName); //TODO: set scrollable
         OverscrollableList postList = (OverscrollableList) findViewById(R.id.postListView);
-        adapter = new PostListAdapter(readThread, this, postList, MessageProcessor.instance, MessageProcessor.instance);
+        adapter = new PostListAdapter(readThread, this, postList, new ImageFactory(this), MessageProcessor.instance);
         postList.setAdapter(adapter);
         if (threadUnreadID>=0)
             postList.setOverScrollListener(new overScrollListener() {

@@ -1,6 +1,7 @@
 package ru.ith.android.flocal.engine;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +37,11 @@ public class ThreadListAdapter extends EndlessAdapter  {
                     row = inflater.inflate(R.layout.thread_entry, parent, false);
                 }
                 FLThreadHeader item = getItem(position);
-                ((TextView)row.findViewById(R.id.threadEntryText)).setText(item.toString());
+                ((TextView)row.findViewById(R.id.threadEntryText)).setText(item.getName());
+				if (item.getUnreadID()>=0)
+					row.setBackgroundColor(Color.LTGRAY);
+				else
+					row.setBackgroundColor(Color.WHITE);
                 return row;
 
             }
