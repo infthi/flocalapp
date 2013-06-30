@@ -1,5 +1,7 @@
 package ru.ith.lib.webcrawl;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -38,6 +40,7 @@ public class ConnectionFactory {
 
 		OutputStream os = listener.getOutputStream();
 
+		Log.e("FL", url);
 		os.write((((postData != null) ? "POST " : "GET ") + url + " HTTP/1.0\n")
 				.getBytes());
 

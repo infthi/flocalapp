@@ -6,11 +6,13 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import ru.ith.lib.flocal.data.AvatarMetaData;
 import ru.ith.lib.flocal.data.FLBoard;
 import ru.ith.lib.flocal.data.FLMessage;
 import ru.ith.lib.flocal.data.FLMessageSet;
@@ -388,19 +390,27 @@ public class FLDataLoader {
         }
     }
 
-	public static String getAvatarURL(FLSession session, String user) throws FLException {
+	public static AvatarMetaData getAvatarMetadata(FLSession session, String user, boolean onlyURL) throws FLException {
 		try {
 			String URL = "/showprofile.php?showlite=sl&User="+ user;
 			HTMLResponce mainPage = doQuery(URL, session);
 
+			String imgURL = null;
+			long lastUpdated = -1;
 			for (Element img: mainPage.getAll("td > img[alt]")){
-				if (img.attr("src").startsWith("/user/"))
-					return "http://"+FLOCAL_HOST+img.attr("src");
-				return null;
+				imgURL = "http://"+FLOCAL_HOST+img.attr("src");
+				break;
 			}
-			return null;
+			if (!onlyURL){
+				//fetch last-updated
+			}
+			return new AvatarMetaData(imgURL, lastUpdated);
 		} catch (IOException e) {
 			throw new FLException("Failed to retrieve data", e.getMessage());
 		}
+	}
+
+	public static InputStream fetchAvatar(AvatarMetaData meta) {
+		return null;
 	}
 }
