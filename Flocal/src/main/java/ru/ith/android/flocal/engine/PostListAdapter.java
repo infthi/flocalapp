@@ -30,6 +30,7 @@ import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLMessage;
 import ru.ith.lib.flocal.data.FLMessageSet;
 import ru.ith.lib.flocal.data.FLThreadHeader;
+import ru.ith.lib.flocal.data.FLThreadPageSet;
 
 /**
  * Created by infthi on 6/25/13.
@@ -84,7 +85,7 @@ public class PostListAdapter extends EndlessAdapter  {
 
     private FLMessageSet fetchOldPosts() throws FLException {
         if (firstLoadedPostKnownOffset<=0)
-            return new FLMessageSet(null, new LinkedList<FLMessage>(), false, 0);
+            return new FLMessageSet(null, new LinkedList<FLMessage>(), new FLThreadPageSet(0, false));
 
         boolean success = false;
         FLMessageSet gotPosts = null;

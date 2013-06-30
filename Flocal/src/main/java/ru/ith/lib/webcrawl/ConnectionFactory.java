@@ -40,7 +40,6 @@ public class ConnectionFactory {
 
 		OutputStream os = listener.getOutputStream();
 
-		Log.e("FL", url);
 		os.write((((postData != null) ? "POST " : "GET ") + url + " HTTP/1.0\n")
 				.getBytes());
 

@@ -8,15 +8,13 @@ import java.util.LinkedList;
 public class FLMessageSet {
     private final FLThreadHeader threadHeader;
     private final LinkedList<FLMessage> messages;
-    private final boolean hasMoreData;
-    private final int offset;
-    public volatile String URL = null;
+    private final FLThreadPageSet set;
+	public volatile String URL = null;
 
-    public FLMessageSet(FLThreadHeader threadHeader, LinkedList<FLMessage> messages, boolean hasMoreData, int threadOffset) {
+    public FLMessageSet(FLThreadHeader threadHeader, LinkedList<FLMessage> messages, FLThreadPageSet set) {
         this.threadHeader = threadHeader;
         this.messages = messages;
-        this.hasMoreData = hasMoreData;
-        this.offset = threadOffset;
+		this.set = set;
     }
 
     public LinkedList<FLMessage> getPosts() {
@@ -25,10 +23,10 @@ public class FLMessageSet {
 
 
     public boolean hasMoreData() {
-        return hasMoreData;
+        return set.hasMorePages;
     }
 
     public int getEffectiveOffset() {
-        return offset;
+        return set.offset;
     }
 }

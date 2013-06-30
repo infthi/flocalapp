@@ -1,5 +1,7 @@
 package ru.ith.lib.flocal;
 
+import android.util.Log;
+
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
@@ -17,6 +19,7 @@ import ru.ith.lib.flocal.data.FLBoard;
 import ru.ith.lib.flocal.data.FLMessage;
 import ru.ith.lib.flocal.data.FLMessageSet;
 import ru.ith.lib.flocal.data.FLThreadHeader;
+import ru.ith.lib.flocal.data.FLThreadPageSet;
 import ru.ith.lib.webcrawl.ConnectionFactory;
 import ru.ith.lib.webcrawl.providers.HTMLResponce;
 import ru.ith.lib.webcrawl.providers.ProviderEnum;
@@ -25,7 +28,7 @@ import ru.ith.lib.webcrawl.providers.ProviderEnum;
  * Created by infthi on 6/26/13.
  */
 public class FLDataLoader {
-    private static final String FLOCAL_HOST = "forumbgz.ru";
+    public static final String FLOCAL_HOST = "forumbgz.ru";
 
     public static final String generateLoginData(String login, String password)
             throws FLException {
@@ -237,14 +240,96 @@ public class FLDataLoader {
         }
     }
 
+	public static FLThreadPageSet parseHeader(HTMLResponce mainPage) throws IOException {
+		int threadOffset = 0;
+		boolean forumBug = false;
+		boolean hasMorePages = false;
+
+		boolean thisElementIsStaticCounter = false;
+		boolean prevElementWasStaticCounter = false;
+		for (Element threadHeaderElement: mainPage.getAll("table > tbody> tr > td > a + br + br")){
+			//possible values:
+			//Страницы: 1
+			//Страницы: ^1^ | (1)
+			//Страницы: ^0^ | ^20^ | (35) | ^40^ | ^показать все^
+			//Страницы: ^0^ | 20 | ^40^ | ^показать все^ | ^след. страница^
+
+			Node pageNavigationElement = threadHeaderElement.nextSibling(); //Pages:
+			while (pageNavigationElement!=null){
+				if (pageNavigationElement instanceof TextNode){
+					//bug-related: | after fake "0"
+					String headerText = ((TextNode) pageNavigationElement).text().replaceAll(" ","");
+					if (headerText.indexOf(':')>=0)
+						if (headerText.endsWith("|")){
+							thisElementIsStaticCounter = true;
+							threadOffset = 0;
+						}
+					if ((headerText.length()>1)&&headerText.startsWith("|")){
+						int extraFwd = 1;
+						int extraBkwd = headerText.endsWith("|")?1:0;
+						if (headerText.charAt(1)=='('){
+							extraFwd++;
+							extraBkwd++;
+						}
+						headerText = headerText.substring(extraFwd, headerText.length()-extraBkwd);
+						threadOffset = Integer.valueOf(headerText);
+						thisElementIsStaticCounter = true;
+					}
+				} else if (pageNavigationElement.nodeName().equals("a")){
+					String href = pageNavigationElement.attr("href");
+					String tistart = extractParam(href, "tistart");
+					if (tistart!=null)
+						if (!tistart.equals("all")){
+							if (prevElementWasStaticCounter)
+								hasMorePages = true;
+							if (tistart.equals("0")){
+								//bug: if request tistart==thread_size+1, we get
+								// first page of thread, but header displays
+								// our effective offset as this wrong tistart.
+								// it's forum's bug
+
+								Elements postLinks = mainPage.getAll("tr>td>a[name]:not([href])");
+								if (!postLinks.isEmpty()){
+									Element first = postLinks.first();
+									String postID = first.attr("name");
+									if (postID.length()>4){
+										String firstPageID = extractParam(href, "Number");
+										if (firstPageID!=null)
+											if (firstPageID.equals(postID.substring(4))){
+												forumBug = true;
+												thisElementIsStaticCounter = true;
+											}
+									}
+								}
+							}
+						}
+				}
+				prevElementWasStaticCounter = thisElementIsStaticCounter;
+				pageNavigationElement = pageNavigationElement.nextSibling();
+			}
+			break;
+		}
+		return new FLThreadPageSet(forumBug?0:threadOffset, hasMorePages);
+	}
+
+	private static String extractParam(String from, String what){
+		int tiStartIndex = from.indexOf(what+"=");
+		if (tiStartIndex>=0){
+			tiStartIndex+=what.length()+1;
+			int tiStartEnd = from.indexOf("&", tiStartIndex);
+			if (tiStartEnd>=0)
+				return from.substring(tiStartIndex, tiStartEnd);
+			else
+				return from.substring(tiStartIndex);
+		}
+		return null;
+	}
+
     public static FLMessageSet listMessages(FLSession session, FLThreadHeader thread, int skip)
             throws FLException {
         LinkedList<FLMessage> result = new LinkedList<FLMessage>();
         try {
             long loadID = thread.getID();
-
-            int threadOffset = 0;
-            boolean hasMorePages = false;
 
             if (loadID<0)
                 loadID = thread.getUnreadID();
@@ -253,48 +338,8 @@ public class FLDataLoader {
                     +((thread.src==null)?"":("&src="+thread.src));
             HTMLResponce mainPage = doQuery(URL, session);
 
-            boolean wasCounter = false;
-            for (Element threadHeaderElement: mainPage.getAll("table > tbody> tr > td > a + br + br")){
-                Node pageNavigationElement = threadHeaderElement.nextSibling(); //Pages:
-                while (pageNavigationElement!=null){
-                    boolean thisCounter = false;
-                    if (pageNavigationElement instanceof TextNode){
-                        String headerText = ((TextNode) pageNavigationElement).text().replaceAll(" ","");
+			FLThreadPageSet header = parseHeader(mainPage);
 
-                        int pagesSplit = headerText.indexOf(':');
-                        if (pagesSplit>0){
-                            headerText = "|"+headerText.substring(pagesSplit+1);
-                        }
-                        if ((headerText.length()>2)&&headerText.startsWith("|")&&headerText.endsWith("|")){
-                            int extra = 1;
-                            if (headerText.charAt(1)=='(')
-                                extra++;
-                            headerText = headerText.substring(extra, headerText.length()-extra);
-                            threadOffset = Integer.valueOf(headerText);
-                            thisCounter = true;
-                        }
-                    } else if (wasCounter&&pageNavigationElement.nodeName().equals("a")){
-                        String href = pageNavigationElement.attr("href");
-                        int tiStartIndex = href.indexOf("tistart=");
-                        if (tiStartIndex>=0){
-                            tiStartIndex+=8;
-
-                            final String tistart;
-                            int tiStartEnd = href.indexOf("&", tiStartIndex);
-                            if (tiStartEnd>=0)
-                                tistart = href.substring(tiStartIndex, tiStartEnd);
-                            else
-                                tistart = href.substring(tiStartIndex);
-
-                            if (!tistart.equals("all"))
-                                hasMorePages = true;
-                        }
-                    }
-                    wasCounter = thisCounter;
-                    pageNavigationElement = pageNavigationElement.nextSibling();
-                }
-                break;
-            }
 
             for (Element mesageHeaderElement : mainPage
                     .getAll("td.subjecttable:not([style])")) {
@@ -382,7 +427,7 @@ public class FLDataLoader {
             }
 
 
-            FLMessageSet resultSet = new FLMessageSet(thread, result, hasMorePages, threadOffset);
+            FLMessageSet resultSet = new FLMessageSet(thread, result, header);
             resultSet.URL = URL;
             return resultSet;
         } catch (IOException e) {
