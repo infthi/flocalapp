@@ -14,11 +14,11 @@ public class ConnectionFactory {
 	private static Socket getConnection(String host) throws IOException{
 		return new Socket(host, 80); //TODO: keep-alive support
 	}
-	public static WebResponceReader doQuery(String host, String url, Map<String, String> cookies, ProviderEnum requestType) throws IOException{
+	public static WebResponseReader doQuery(String host, String url, Map<String, String> cookies, ProviderEnum requestType) throws IOException{
 		return doQueryMain(host, url, cookies, null, null, requestType);
 	}
 	
-	public static WebResponceReader doQuery(String host, String url, Map<String, String> cookies,
+	public static WebResponseReader doQuery(String host, String url, Map<String, String> cookies,
 			Map<String, String> postData, String postEncoding, ProviderEnum requestType) throws IOException {
 		byte[]postDataB = null;
 		if (postData!=null){
@@ -33,15 +33,23 @@ public class ConnectionFactory {
 		}
 		return doQueryMain(host, url, cookies, postDataB, "application/x-www-form-urlencoded", requestType);
 	}
+
+	private static String method(ProviderEnum request, byte[]postData){
+		if (request==ProviderEnum.HEAD)
+			return "HEAD";
+		if (postData==null)
+			return "GET";
+		return "POST";
+	}
 	
-	public static WebResponceReader doQueryMain(String host, String url, Map<String, String> cookies,
+	public static WebResponseReader doQueryMain(String host, String url, Map<String, String> cookies,
 			byte[] postData, String postContentType, ProviderEnum requestType) throws IOException {
 		Socket listener = getConnection(host);
 
 		OutputStream os = listener.getOutputStream();
 
 		Log.e("FL", url);
-		os.write((((postData != null) ? "POST " : "GET ") + url + " HTTP/1.0\n")
+		os.write((method(requestType, postData) + " " + url + " HTTP/1.0\n")
 				.getBytes());
 
 		if ((cookies!=null)&&(!cookies.isEmpty())){
@@ -61,6 +69,6 @@ public class ConnectionFactory {
 		if (postData != null) {
 			os.write(postData);
 		}
-		return  WebResponceReader.make(listener.getInputStream(), requestType);
+		return  WebResponseReader.make(listener.getInputStream(), requestType);
 	}
 }

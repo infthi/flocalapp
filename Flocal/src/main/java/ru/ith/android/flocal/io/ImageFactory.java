@@ -13,9 +13,11 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.text.Html;
 import android.util.Log;
+import android.util.TypedValue;
 import android.widget.ImageView;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -40,6 +42,11 @@ import ru.ith.lib.flocal.data.AvatarMetaData;
 public class ImageFactory implements Html.ImageGetter {
 	private final Activity context;
 	final SQLiteDatabase DB;
+
+	private final static TypedValue typedValue = new TypedValue();
+	{
+		typedValue.density = TypedValue.DENSITY_NONE;
+	}
 
 	public ImageFactory(Activity context) {
 		this.context = context;
@@ -110,8 +117,20 @@ public class ImageFactory implements Html.ImageGetter {
 	public Drawable loadFromCache(String cachedFileName) {
 		File cachedFile = new File(context.getCacheDir(), cachedFileName);
 		Drawable result = null;
-		if (cachedFile.isFile()){
-			result = Drawable.createFromPath(cachedFile.getPath());
+		FileInputStream fis = null;
+		try {
+			fis = new FileInputStream(cachedFile);
+			BitmapFactory.Options o = new BitmapFactory.Options();
+			o.inScaled = false;
+			o.inDensity = 125;
+			result = Drawable.createFromResourceStream(null, typedValue, fis, "@cache", o);
+		} catch (FileNotFoundException e) {
+		} finally {
+			if (fis != null)
+				try {
+					fis.close();
+				} catch (IOException e) {
+				}
 		}
 		//TODO: some marker that avatar failed to load
 		return result;
@@ -133,7 +152,7 @@ public class ImageFactory implements Html.ImageGetter {
 	}
 }
 
-class avatarLoaderTask extends AsyncTask<String, Void, Drawable> {
+class avatarLoaderTask extends AsyncTask<Void, Void, Drawable> {
 
 	private String mUser;
 	private ImageFactory mImageFactory;
@@ -144,7 +163,7 @@ class avatarLoaderTask extends AsyncTask<String, Void, Drawable> {
 	}
 
 	@Override
-	protected Drawable doInBackground(String... params) {
+	protected Drawable doInBackground(Void... params) {
 		boolean useCachedVersion = false;
 		AvatarMetaData meta = null;
 		String whereClause =  AvatarCacheDB.ROW_USER + "= ?";
@@ -154,11 +173,11 @@ class avatarLoaderTask extends AsyncTask<String, Void, Drawable> {
 			Cursor c = null;
 			try {
 				c = mImageFactory.DB.query(AvatarCacheDB.AVATAR_TABLE, new String[]{AvatarCacheDB.ROW_CACHED_FILE, AvatarCacheDB.ROW_LAST_CHECKED},whereClause, whereValues, null, null, null);
-				if (c.isBeforeFirst()) {
+				if (c.getCount()>0) {
 					c.moveToNext();
-					String cachedFileName = c.getString(1);
-					Long cachedAt = c.getLong(2);
-					if (cachedAt >= System.currentTimeMillis() - 2 * 7 * 86400 * 1000) {
+					String cachedFileName = c.getString(0);
+					Long cachedAt = c.getLong(1);
+					if (cachedAt >= System.currentTimeMillis() - 2 * 7 * 86400 * 1000) { //two-week invalidation
 						useCachedVersion = true;
 					} else {
 						meta = FLDataLoader.getAvatarMetadata(SessionContainer.getSessionInstance(), mUser, false);
@@ -198,6 +217,12 @@ class avatarLoaderTask extends AsyncTask<String, Void, Drawable> {
 				newAvatarStream = FLDataLoader.fetchAvatar(meta);
 				cacheID = mImageFactory.saveToCache(newAvatarStream);
 			}
+
+			ContentValues newCachedAvatar = new ContentValues();
+			newCachedAvatar.put(AvatarCacheDB.ROW_USER, mUser);
+			newCachedAvatar.put(AvatarCacheDB.ROW_CACHED_FILE, cacheID);
+			newCachedAvatar.put(AvatarCacheDB.ROW_LAST_CHECKED, System.currentTimeMillis());
+			mImageFactory.DB.insert(AvatarCacheDB.AVATAR_TABLE, null, newCachedAvatar);
 
 			if (cacheID==null)
 				return null;

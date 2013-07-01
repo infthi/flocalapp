@@ -1,7 +1,5 @@
 package ru.ith.lib.flocal;
 
-import android.util.Log;
-
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
@@ -21,6 +19,9 @@ import ru.ith.lib.flocal.data.FLMessageSet;
 import ru.ith.lib.flocal.data.FLThreadHeader;
 import ru.ith.lib.flocal.data.FLThreadPageSet;
 import ru.ith.lib.webcrawl.ConnectionFactory;
+import ru.ith.lib.webcrawl.WebResponseReader;
+import ru.ith.lib.webcrawl.providers.BinaryResponse;
+import ru.ith.lib.webcrawl.providers.HEADResponse;
 import ru.ith.lib.webcrawl.providers.HTMLResponce;
 import ru.ith.lib.webcrawl.providers.ProviderEnum;
 
@@ -394,15 +395,16 @@ public class FLDataLoader {
                         .nextElementSibling();
                 if (ratingNodeContainer.childNodeSize()>0){
                     Node ratingNodeSpan = ratingNodeContainer.childNode(0);
+					final Node ratingNode;
                     if (ratingNodeSpan.childNodeSize()>0){
-                        Node ratingNode = ratingNodeSpan.childNode(0);
-                        if (ratingNode instanceof TextNode)
-                            rating = Integer.valueOf(((TextNode) ratingNode)
-                                    .text());
-                        else
-                            continue;
+                        ratingNode = ratingNodeSpan.childNode(0);
                     } else
-                        continue;
+                        ratingNode = ratingNodeSpan; //anonymous see only text; without buttons
+					if (ratingNode instanceof TextNode)
+						rating = Integer.valueOf(((TextNode) ratingNode)
+								.text());
+					else
+						continue;
                 } else
                     continue;
 
@@ -445,11 +447,13 @@ public class FLDataLoader {
 			String imgURL = null;
 			long lastUpdated = -1;
 			for (Element img: mainPage.getAll("td > img[alt]")){
-				imgURL = "http://"+FLOCAL_HOST+img.attr("src");
+				imgURL = img.attr("src");
 				break;
 			}
 			if (!onlyURL){
 				//fetch last-updated
+				HEADResponse metaData = (HEADResponse) ConnectionFactory.doQuery(FLOCAL_HOST, imgURL, null, ProviderEnum.HEAD);
+				lastUpdated = metaData.metaData.getLastModified();
 			}
 			return new AvatarMetaData(imgURL, lastUpdated);
 		} catch (IOException e) {
@@ -457,7 +461,8 @@ public class FLDataLoader {
 		}
 	}
 
-	public static InputStream fetchAvatar(AvatarMetaData meta) {
-		return null;
+	public static InputStream fetchAvatar(AvatarMetaData meta) throws IOException {
+		BinaryResponse response = (BinaryResponse) ConnectionFactory.doQuery(FLOCAL_HOST, meta.URL, null, ProviderEnum.BINARY);
+		return response.getStream();
 	}
 }
