@@ -448,6 +448,8 @@ public class FLDataLoader {
 			long lastUpdated = -1;
 			for (Element img: mainPage.getAll("td > img[alt]")){
 				imgURL = img.attr("src");
+				if (imgURL.endsWith("nopicture.gif"))
+					imgURL = null;
 				break;
 			}
 			if (!onlyURL){
