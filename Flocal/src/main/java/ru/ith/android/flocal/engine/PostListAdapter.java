@@ -152,7 +152,7 @@ public class PostListAdapter extends EndlessAdapter  {
                     if (fetchedPosts.getLast().getID()<=lastKnownPost){
                         if (fetchedPosts.size()>1){
                             //this page contains only newPosts before last post we knew. let's load future pages
-                            //to get some newer newPosts we have not read yet
+                             //to get some newer newPosts we have not read yet
                             lastLoadedPostKnownOffset += fetchedPosts.size()-1;
                             continue;
                         } else {
@@ -163,7 +163,7 @@ public class PostListAdapter extends EndlessAdapter  {
                     }
 
                     //this page definitely contains some new newPosts; let's filter em
-                    lastLoadedPostKnownOffset = gotPosts.getEffectiveOffset()+fetchedPosts.size()-1-5;
+                    lastLoadedPostKnownOffset = gotPosts.getEffectiveOffset()+fetchedPosts.size()-1;
                     success = true;
                     remover:
                     while (!fetchedPosts.isEmpty()){

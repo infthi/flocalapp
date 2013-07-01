@@ -228,7 +228,6 @@ public class FLDataLoader {
                         firstUnread = -1;
                     }
 
-
                     FLThreadHeader thread = new FLThreadHeader(name, author, numUnread, numUnreadDisc,
                             first, firstUnread, isPinned, board.src);
                     result.add(thread);
@@ -252,6 +251,7 @@ public class FLDataLoader {
 			//Страницы: 1
 			//Страницы: ^1^ | (1)
 			//Страницы: ^0^ | ^20^ | (35) | ^40^ | ^показать все^
+			//Страницы: ^0^ | ^20^ | ^40^ | (45) | ^показать все^
 			//Страницы: ^0^ | 20 | ^40^ | ^показать все^ | ^след. страница^
 
 			Node pageNavigationElement = threadHeaderElement.nextSibling(); //Pages:
@@ -260,7 +260,7 @@ public class FLDataLoader {
 					//bug-related: | after fake "0"
 					String headerText = ((TextNode) pageNavigationElement).text().replaceAll(" ","");
 					if (headerText.indexOf(':')>=0)
-						if (headerText.endsWith("|")){
+						if (headerText.endsWith("|")&&(!headerText.endsWith(":|"))){
 							thisElementIsStaticCounter = true;
 							threadOffset = 0;
 						}
@@ -272,8 +272,10 @@ public class FLDataLoader {
 							extraBkwd++;
 						}
 						headerText = headerText.substring(extraFwd, headerText.length()-extraBkwd);
-						threadOffset = Integer.valueOf(headerText);
-						thisElementIsStaticCounter = true;
+						if (!headerText.contains(".")){
+							threadOffset = Integer.valueOf(headerText);
+							thisElementIsStaticCounter = true;
+						}
 					}
 				} else if (pageNavigationElement.nodeName().equals("a")){
 					String href = pageNavigationElement.attr("href");
