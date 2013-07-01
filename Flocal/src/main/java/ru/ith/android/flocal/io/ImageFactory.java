@@ -12,6 +12,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.text.Html;
+import android.util.Log;
 import android.widget.ImageView;
 
 import java.io.File;
@@ -19,7 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
+import java.lang.ref.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
@@ -53,23 +54,25 @@ public class ImageFactory implements Html.ImageGetter {
 		return result;
 	}
 
-	private Map<String, WeakReference<Drawable>> avatarCache = new HashMap<String, WeakReference<Drawable>>();
+	private Map<String, Reference<Drawable>> avatarCache = new HashMap<String, Reference<Drawable>>();
 	private Map<String, List<ImageView>> waiters = new TreeMap<String, List<ImageView>>();
 
 	public synchronized void getAvatar(String user, ImageView target) {
 		if (avatarCache.containsKey(user)){
-			WeakReference<Drawable> ref = avatarCache.get(user);
+			Reference<Drawable> ref = avatarCache.get(user);
 			if (ref==null){
 				target.setImageDrawable(null);
 				return;
 			} else {
 				Drawable avatar = ref.get();
 				if (avatar!=null){
+					Log.d("FL", "got from mem-cache for "+user);
 					target.setImageDrawable(avatar);
 					return;
 				}
 			}
 		}
+		Log.d("FL", "forced to load for "+user);
 		Drawable loading = context.getResources().getDrawable(R.drawable.spinner_background);
 		target.setImageDrawable(loading);
 		List<ImageView> avatarWaiters = waiters.get(user);
@@ -81,22 +84,27 @@ public class ImageFactory implements Html.ImageGetter {
 		avatarWaiters.add(target);
 	}
 
-	public synchronized void avatarLoaded(String user, final Drawable drawable) {
-		avatarCache.put(user, new WeakReference<Drawable>(drawable));
+	public synchronized void avatarLoaded(String user, final Drawable avatar) {
+		Log.d("FL", "loaded for "+user);
+		if (avatar!=null)
+			avatarCache.put(user, new WeakReference<Drawable>(avatar));
+		else
+			avatarCache.put(user, null);
 		final List<ImageView> victims = waiters.get(user);
 		if (victims==null)
 			return;
-		if (drawable!=null)
-			drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable
+		if (avatar!=null)
+			avatar.setBounds(0, 0, avatar.getIntrinsicWidth(), avatar
 				.getIntrinsicHeight());
 		for (final ImageView view:victims){
 			context.runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					view.setImageDrawable(drawable);
+					view.setImageDrawable(avatar);
 				}
 			});
 		}
+		waiters.put(user, null);
 	}
 
 	public Drawable loadFromCache(String cachedFileName) {
