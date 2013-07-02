@@ -2,6 +2,7 @@ package ru.ith.android.flocal.engine;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,12 +11,16 @@ import android.widget.TextView;
 
 import com.commonsware.cwac.endless.EndlessAdapter;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.TreeSet;
 
 import ru.ith.android.flocal.R;
 import ru.ith.lib.flocal.FLDataLoader;
+import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLBoard;
 import ru.ith.lib.flocal.data.FLThreadHeader;
 
@@ -24,7 +29,10 @@ import ru.ith.lib.flocal.data.FLThreadHeader;
  */
 public class ThreadListAdapter extends EndlessAdapter  {
     private final FLBoard board;
-    private final ArrayAdapter data;
+    private final ArrayAdapter<FLThreadHeader> data;
+    private final Timer refresher;
+    private final long UPDATE_EVERY = 10000;
+    private Activity ctxt;
 
     public ThreadListAdapter(FLBoard board, final Activity ctxt) {
         super(new ArrayAdapter<FLThreadHeader>(ctxt, R.layout.thread_entry){
@@ -46,13 +54,16 @@ public class ThreadListAdapter extends EndlessAdapter  {
 
             }
         });
+        this.ctxt = ctxt;
         data = (ArrayAdapter) getWrappedAdapter();
         this.board = board;
         knownThreads.clear();
 
+        refresher = new Timer("Thread_list_refresher", true);
+        refresher.scheduleAtFixedRate(new ThreadListUpdater(board, this), UPDATE_EVERY, UPDATE_EVERY);
     }
 
-    Set<FLThreadHeader> knownThreads = new TreeSet<FLThreadHeader>();
+    Set<FLThreadHeader> knownThreads = new HashSet<FLThreadHeader>();
     int currentPage = 0;
 
     private LinkedList<FLThreadHeader> threads = new LinkedList<FLThreadHeader>();
@@ -82,5 +93,42 @@ public class ThreadListAdapter extends EndlessAdapter  {
         TextView result = new TextView(parent.getContext());
         result.setText("Loading...");
         return result;
+    }
+
+    public void applyUpdate(final LinkedList<FLThreadHeader> firstPage) {
+        this.ctxt.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                int counter = 0;
+                for (FLThreadHeader thread: firstPage){
+                    if (knownThreads.remove(thread))
+                        data.remove(thread);
+                    knownThreads.add(thread);
+                    data.insert(thread, counter++);
+                }
+                notifyDataSetChanged();
+            }
+        });
+    }
+}
+
+
+class ThreadListUpdater extends TimerTask{
+
+    private final FLBoard board;
+    private ThreadListAdapter target;
+
+    ThreadListUpdater(FLBoard board, ThreadListAdapter target) {
+        this.board = board;
+        this.target = target;
+    }
+
+    @Override
+    public void run() {
+        try {
+            LinkedList<FLThreadHeader> firstPage = FLDataLoader.listThreads(SessionContainer.getSessionInstance(), board, 0);
+            target.applyUpdate(firstPage);
+        } catch (FLException e) {
+        }
     }
 }

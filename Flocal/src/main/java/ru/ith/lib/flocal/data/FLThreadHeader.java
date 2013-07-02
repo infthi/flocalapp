@@ -60,4 +60,18 @@ public class FLThreadHeader implements Comparable<FLThreadHeader>{
 		//TODO: check themes are equal enough (but same thread can have different themes from  time to tice 'cause of edits)
 		return getName().compareTo(another.getName());
 	}
+
+    @Override
+    public boolean equals(Object o) {
+        if (o==null)
+            return false;
+        if (!(o instanceof FLThreadHeader))
+            return false;
+        return this.compareTo((FLThreadHeader) o)==0;
+    }
+
+    @Override
+    public int hashCode() {
+        return author.hashCode(); //the only immutable property of thread =[
+    }
 }
