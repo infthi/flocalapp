@@ -147,6 +147,7 @@ public class FLDataLoader {
 
     public static LinkedList<FLThreadHeader> listThreads(FLSession session, FLBoard board, int page)
             throws FLException {
+        //TODO: add some structure which will contain data on next page availability
         LinkedList<FLThreadHeader> result = new LinkedList<FLThreadHeader>();
         try {
             HTMLResponce mainPage = doQuery("/postlist.php?Board="

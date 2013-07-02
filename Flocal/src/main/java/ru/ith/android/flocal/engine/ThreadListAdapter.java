@@ -58,10 +58,11 @@ public class ThreadListAdapter extends EndlessAdapter  {
     private LinkedList<FLThreadHeader> threads = new LinkedList<FLThreadHeader>();
     @Override
     protected boolean cacheInBackground() throws Exception {
+        LinkedList<FLThreadHeader> nextPage = FLDataLoader.listThreads(SessionContainer.getSessionInstance(), board, currentPage++);
         synchronized (threads){
-            threads.addAll(FLDataLoader.listThreads(SessionContainer.getSessionInstance(), board, currentPage++));
+            threads.addAll(nextPage);
         }
-        return true;
+        return !nextPage.isEmpty();
     }
 
     @Override
