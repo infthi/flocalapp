@@ -121,9 +121,17 @@ public class ImageFactory implements Html.ImageGetter {
 		try {
 			fis = new FileInputStream(cachedFile);
 			BitmapFactory.Options o = new BitmapFactory.Options();
-			o.inScaled = false;
-			o.inDensity = 125;
-			result = Drawable.createFromResourceStream(null, typedValue, fis, "@cache", o);
+            Bitmap largeAvatar = BitmapFactory.decodeStream(fis, null, o);
+
+            if (largeAvatar!=null){
+                int max = Math.max(o.outHeight, o.outWidth);
+                if (max>80){
+                    double scale = 80.0/max;
+                    largeAvatar = Bitmap.createScaledBitmap(largeAvatar, (int)(o.outWidth*scale), (int)(o.outHeight*scale), true);
+                }
+                return new BitmapDrawable(null, largeAvatar);
+            }
+            return null;
 		} catch (FileNotFoundException e) {
 		} finally {
 			if (fis != null)

@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="libforumlocal">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/libforumlocal/build/libs/libforumlocal.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

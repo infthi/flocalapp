@@ -36,4 +36,8 @@ public class FLMessage {
     public String getAuthor() {
         return userName;
     }
+
+    public String getDate() {
+        return date;
+    }
 }

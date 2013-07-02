@@ -54,6 +54,7 @@ public class PostListAdapter extends EndlessAdapter  {
                     result = ctxt.getLayoutInflater().inflate(R.layout.post_entry, null, false);
                     ((TextView)result.findViewById(R.id.postEntryText)).setText(Html.fromHtml(item.message.getPostData(), imageGetter, tagHandler));
                     ((TextView)result.findViewById(R.id.postEntryAuthor)).setText(item.message.getAuthor());
+                    ((TextView)result.findViewById(R.id.postEntryDate)).setText(item.message.getDate());
 					imageGetter.getAvatar(item.message.getAuthor(), ((ImageView)result.findViewById(R.id.postEntryAvatar)));
 					cachedMessageViews.put(item.message.getID(), result);
 				}
