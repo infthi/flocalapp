@@ -7,6 +7,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.util.Map;
+
+import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.webcrawl.providers.ProviderEnum;
 
 public class ConnectionFactory {
@@ -48,9 +50,9 @@ public class ConnectionFactory {
 
 		OutputStream os = listener.getOutputStream();
 
-		Log.e("FL", url);
+		Log.d(FLDataLoader.FLOCAL_APP_SIGN, url);
 		os.write((method(requestType, postData) + " " + url + " HTTP/1.0\n")
-				.getBytes());
+                .getBytes());
 
 		if ((cookies!=null)&&(!cookies.isEmpty())){
 			StringBuilder cookieString = new StringBuilder("Cookie: ");

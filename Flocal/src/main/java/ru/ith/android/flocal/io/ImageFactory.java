@@ -73,13 +73,13 @@ public class ImageFactory implements Html.ImageGetter {
 			} else {
 				Drawable avatar = ref.get();
 				if (avatar!=null){
-					Log.d("FL", "got from mem-cache for "+user);
+					Log.v(FLDataLoader.FLOCAL_APP_SIGN, "got from mem-cache for "+user);
 					target.setImageDrawable(avatar);
 					return;
 				}
 			}
 		}
-		Log.d("FL", "forced to load for "+user);
+		Log.v(FLDataLoader.FLOCAL_APP_SIGN, "forced to load for "+user);
 		Drawable loading = context.getResources().getDrawable(R.drawable.spinner_background);
 		target.setImageDrawable(loading);
 		List<ImageView> avatarWaiters = waiters.get(user);
@@ -92,7 +92,7 @@ public class ImageFactory implements Html.ImageGetter {
 	}
 
 	public synchronized void avatarLoaded(String user, final Drawable avatar) {
-		Log.d("FL", "loaded for "+user);
+		Log.v(FLDataLoader.FLOCAL_APP_SIGN, "loaded for "+user);
 		if (avatar!=null)
 			avatarCache.put(user, new WeakReference<Drawable>(avatar));
 		else

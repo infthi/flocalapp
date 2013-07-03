@@ -30,8 +30,6 @@ import ru.ith.lib.flocal.data.FLThreadHeader;
 public class ThreadListAdapter extends EndlessAdapter  {
     private final FLBoard board;
     private final ArrayAdapter<FLThreadHeader> data;
-    private final Timer refresher;
-    private final long UPDATE_EVERY = 10000;
     private Activity ctxt;
 
     public ThreadListAdapter(FLBoard board, final Activity ctxt) {
@@ -58,9 +56,6 @@ public class ThreadListAdapter extends EndlessAdapter  {
         data = (ArrayAdapter) getWrappedAdapter();
         this.board = board;
         knownThreads.clear();
-
-        refresher = new Timer("Thread_list_refresher", true);
-        refresher.scheduleAtFixedRate(new ThreadListUpdater(board, this), UPDATE_EVERY, UPDATE_EVERY);
     }
 
     Set<FLThreadHeader> knownThreads = new HashSet<FLThreadHeader>();

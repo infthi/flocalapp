@@ -44,29 +44,15 @@ public class PostListActivity extends ForumActivity {
                     }
                 }
             });
-        refresh();
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     void refresh() {
-
+        adapter.refresh();
     }
 
     @Override
-    protected void onPause() {
-        super.onStop();
-        adapter.setRunning(false);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        adapter.setRunning(true);
+    long getRefreshPeriod() {
+        return 10000;
     }
 }

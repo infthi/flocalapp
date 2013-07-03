@@ -7,8 +7,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import java.util.LinkedList;
+
 import ru.ith.android.flocal.R;
+import ru.ith.android.flocal.engine.SessionContainer;
 import ru.ith.android.flocal.engine.ThreadListAdapter;
+import ru.ith.lib.flocal.FLDataLoader;
+import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLBoard;
 import ru.ith.lib.flocal.data.FLThreadHeader;
 
@@ -17,6 +22,8 @@ public class ThreadListActivity extends ForumActivity {
     public static final String KEY_BOARD = "board";
     public static final String KEY_BOARD_NAME = "boardName";
     public static final String KEY_BOARD_SRC = "boardSRC";
+    private ThreadListAdapter adapter = null;
+    private FLBoard board = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,11 +34,11 @@ public class ThreadListActivity extends ForumActivity {
         String boardURI = intent.getStringExtra(KEY_BOARD);
         String boardName = intent.getStringExtra(KEY_BOARD_NAME);
         String boardSrc = intent.getStringExtra(KEY_BOARD_SRC);
-        FLBoard readBoard = new FLBoard(boardName, boardURI, false, boardSrc);
+        board = new FLBoard(boardName, boardURI, false, boardSrc);
         setTitle(boardName);
-        refresh();
         ListView threadList = (ListView) findViewById(R.id.threadListView);
-        threadList.setAdapter(new ThreadListAdapter(readBoard, this));
+        adapter = new ThreadListAdapter(board, this);
+        threadList.setAdapter(adapter);
         threadList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -47,15 +54,20 @@ public class ThreadListActivity extends ForumActivity {
 
     }
 
-
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        return super.onCreateOptionsMenu(menu);
+    void refresh() {
+        LinkedList<FLThreadHeader> firstPage = null;
+        try {
+            firstPage = FLDataLoader.listThreads(SessionContainer.getSessionInstance(), board, 0);
+            adapter.applyUpdate(firstPage);
+        } catch (FLException e) {
+            //TODO: log
+        }
     }
 
     @Override
-    void refresh() {
-
+    long getRefreshPeriod() {
+        return 10000;
     }
 
 }

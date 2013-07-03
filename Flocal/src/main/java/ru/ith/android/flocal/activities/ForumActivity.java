@@ -14,11 +14,14 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 
 import ru.ith.android.flocal.R;
 import ru.ith.android.flocal.engine.MessageProcessor;
 import ru.ith.android.flocal.engine.SessionContainer;
+import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 
 /**
@@ -36,7 +39,6 @@ public abstract class ForumActivity extends Activity {
 		} catch (FLException e) {
 			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
 			menu.add(0,1,1, e.getMessage()).setEnabled(false);
-			Log.e("FL", e.getMessage());
 		}
 		return super.onCreateOptionsMenu(menu);
 	}
@@ -134,7 +136,7 @@ public abstract class ForumActivity extends Activity {
 				try {
 					SessionContainer.getInstance().logout();
 				} catch (FLException e) {
-					Log.wtf("FL", e.toString());
+					Log.wtf(FLDataLoader.FLOCAL_APP_SIGN, e.toString());
 				} finally {
 					runOnUiThread(new Runnable() {
 						@Override
@@ -151,10 +153,29 @@ public abstract class ForumActivity extends Activity {
 
 	abstract void refresh();
 
+    abstract long getRefreshPeriod();
+
+    private Timer refresher = null;
+    private TimerTask refreshTask = null;
 
     @Override
     protected void onResume() {
         super.onResume();
         MessageProcessor.instance.setContext(this);
+        refresher = new Timer("Thread_list_refresher", true);
+        refreshTask = new TimerTask() {
+            @Override
+            public void run() {
+                refresh();
+            };
+        };
+        refresher.scheduleAtFixedRate(refreshTask, getRefreshPeriod(), getRefreshPeriod());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        refreshTask.cancel();
+        refresher.purge();
     }
 }

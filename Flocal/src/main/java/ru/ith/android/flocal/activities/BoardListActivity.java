@@ -56,4 +56,9 @@ public class BoardListActivity extends ForumActivity {
 		BoardListLoader loader = new BoardListLoader(this);
 		loader.execute();
 	}
+
+    @Override
+    long getRefreshPeriod() {
+        return 10000;
+    }
 }

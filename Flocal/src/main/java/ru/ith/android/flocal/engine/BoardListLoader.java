@@ -37,7 +37,7 @@ public class BoardListLoader extends AsyncTask<Void, Void, List<FLBoard>> {
         try {
             return FLDataLoader.listBoards(SessionContainer.getSessionInstance());
         } catch (FLException e) {
-            Log.e("FL", e.toString(), e);
+            Log.e(FLDataLoader.FLOCAL_APP_SIGN, e.toString(), e);
         }
         return Collections.emptyList();
     }

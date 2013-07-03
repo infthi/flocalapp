@@ -182,8 +182,6 @@ public class PostListAdapter extends EndlessAdapter  {
     }
 
     protected boolean cacheInBackground(boolean up) throws Exception {
-        if (!running.get())
-            return true;
 
         final FLMessageSet gotPosts;
         final LinkedList<FLMessage> target;
@@ -212,28 +210,6 @@ public class PostListAdapter extends EndlessAdapter  {
         }
 
         scrolledToEnd.set(true);
-
-        if (checkerThread!=null)
-            checkerThread.interrupt();
-        checkerThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(10000); //TODO: setting/const
-                } catch (InterruptedException e) {
-                    return;
-                }
-                if (running.get())
-                    ctxt.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            restartAppending();
-                            getView(getCount()-1, null, null); //since we restarted appending, getcount will return num of newPosts + 1 for "loading" item. we must substract this "loading" item
-                        }
-                    });
-            }
-        });
-        checkerThread.start();
         return false;
     }
 
@@ -259,12 +235,6 @@ public class PostListAdapter extends EndlessAdapter  {
         return result;
     }
 
-    private AtomicBoolean running = new AtomicBoolean(true);
-
-    public void setRunning(final boolean isRunning) {
-        running.set(isRunning);
-    }
-
     private AtomicBoolean drawnUpPlaceholder = new AtomicBoolean(false);
 
     public void upOverScroll() {
@@ -275,9 +245,7 @@ public class PostListAdapter extends EndlessAdapter  {
             }
     }
 
-	protected boolean cacheInBackgroundUpper() {
-		if (!running.get())
-			return true;
+	protected void cacheInBackgroundUpper() {
 		new AsyncTask<Void, Void, Void>(){
 
 			@Override
@@ -309,9 +277,19 @@ public class PostListAdapter extends EndlessAdapter  {
 				}
 			}
 		}.execute();
-		return false;
 	}
 	private  static final AtomicInteger container = new AtomicInteger(0);
+
+    public void refresh() {
+        ctxt.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                restartAppending();
+                if (scrolledToEnd.get())
+                    getView(getCount() - 1, null, null); //since we restarted appending, getcount will return num of newPosts + 1 for "loading" item. we must substract this "loading" item
+            }
+        });
+    }
 }
 
 

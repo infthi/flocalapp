@@ -30,6 +30,7 @@ import ru.ith.lib.webcrawl.providers.ProviderEnum;
  */
 public class FLDataLoader {
     public static final String FLOCAL_HOST = "forumbgz.ru";
+    public static final String FLOCAL_APP_SIGN = "forum-local";
 
     public static final String generateLoginData(String login, String password)
             throws FLException {
