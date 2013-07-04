@@ -2,7 +2,12 @@ package ru.ith.android.flocal.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Toast;
 
 import ru.ith.android.flocal.engine.MessageProcessor;
 import ru.ith.android.flocal.io.ImageFactory;
@@ -44,6 +49,7 @@ public class PostListActivity extends ForumActivity {
                     }
                 }
             });
+        registerForContextMenu(postList);
     }
 
     @Override
@@ -54,5 +60,24 @@ public class PostListActivity extends ForumActivity {
     @Override
     long getRefreshPeriod() {
         return 10000;
+    }
+
+    private final static int MENU_REPLY = 1;
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        menu.add(0, MENU_REPLY, 0, R.string.post_option_reply);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        if (item.getItemId() == MENU_REPLY){
+            AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+            Toast.makeText(this, "Not implemented yet", Toast.LENGTH_LONG).show();
+            //adapter.getItem(acmi.position).toString()
+            return true;
+        }
+        return super.onContextItemSelected(item);
     }
 }

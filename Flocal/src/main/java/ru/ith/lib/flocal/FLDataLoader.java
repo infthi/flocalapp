@@ -422,7 +422,7 @@ public class FLDataLoader {
                         else
                             break;
                     }
-                    postHtml.append(textElement.html());
+                    postHtml.append(generatePostHTML(textElement));
                 }
                 else
                     continue;
@@ -439,6 +439,21 @@ public class FLDataLoader {
         } catch (IOException e) {
             throw new FLException("Failed to retrieve data", e.getMessage());
         }
+    }
+
+    private static String generatePostHTML(Element elt){
+        for (Element link: elt.select("a")){
+            if (link.attr("href").startsWith("/")){
+                link.attr("href", "flocal:/"+link.attr("href"));
+                List<Node> children = link.childNodes();
+                if (children.size()==1){
+                    Node possibleTextNode = children.get(0);
+                    if (possibleTextNode instanceof TextNode)
+                        ((TextNode) possibleTextNode).text("---");
+                }
+            }
+        }
+        return elt.html();
     }
 
 	public static AvatarMetaData getAvatarMetadata(FLSession session, String user, boolean onlyURL) throws FLException {
