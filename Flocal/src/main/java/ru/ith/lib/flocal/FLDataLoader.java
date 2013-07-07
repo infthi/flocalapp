@@ -481,7 +481,11 @@ public class FLDataLoader {
 	}
 
 	public static InputStream fetchAvatar(AvatarMetaData meta) throws IOException {
-		BinaryResponse response = (BinaryResponse) ConnectionFactory.doQuery(FLOCAL_HOST, meta.URL, null, ProviderEnum.BINARY);
+		return fetchFile(meta.URL);
+	}
+
+	public static InputStream fetchFile(String URL) throws IOException {
+		BinaryResponse response = (BinaryResponse) ConnectionFactory.doQuery(FLOCAL_HOST, URL, null, ProviderEnum.BINARY);
 		return response.getStream();
 	}
 }

@@ -25,10 +25,11 @@ public class BinaryResponse extends WebResponseReader {
 class limitedStream extends InputStream {
 	private final InputStream wrapped;
 	private long remaining;
+	private long size;
 
 	limitedStream(InputStream wrapped, long size) {
 		this.wrapped = wrapped;
-		this.remaining = size;
+		this.remaining = this.size = size;
 	}
 
 	@Override

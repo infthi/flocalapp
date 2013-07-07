@@ -12,6 +12,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.text.Html;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.widget.ImageView;
@@ -43,22 +44,37 @@ public class ImageFactory implements Html.ImageGetter {
 	private final Activity context;
 	final SQLiteDatabase DB;
 
-	private final static TypedValue typedValue = new TypedValue();
-	{
-		typedValue.density = TypedValue.DENSITY_NONE;
-	}
-
 	public ImageFactory(Activity context) {
 		this.context = context;
 		DB = new AvatarCacheDB(context).getWritableDatabase();
+		DisplayMetrics dm = new DisplayMetrics();
+		context.getWindowManager().getDefaultDisplay().getMetrics(dm);
+		float density = dm.density;
 	}
 
 	@Override
 	public Drawable getDrawable(String source) {
-		Drawable result = context.getResources().getDrawable(android.R.drawable.ic_delete);
-		result.setBounds(0, 0, result.getIntrinsicWidth(), result
-				.getIntrinsicHeight());
-		return result;
+		try {
+			try {
+				URL url = new URL("http://forumlocal.ru"+source);
+				HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+				connection.setDoInput(true);
+				connection.connect();
+				InputStream input = connection.getInputStream();
+				Bitmap myBitmap = BitmapFactory.decodeStream(input);
+				myBitmap.toString();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			InputStream fis = FLDataLoader.fetchFile(source);
+			String id = saveToCache(fis, "file");
+			return loadFromCache(id);
+//			Bitmap largeAvatar = BitmapFactory.decodeStream(fis, null, new BitmapFactory.Options());
+//			largeAvatar = Bitmap.createScaledBitmap(largeAvatar, 30, 30, true);
+//			return new BitmapDrawable(null, largeAvatar);
+		} catch (IOException e) {
+			return null;
+		}
 	}
 
 	private Map<String, Reference<Drawable>> avatarCache = new HashMap<String, Reference<Drawable>>();
@@ -144,10 +160,10 @@ public class ImageFactory implements Html.ImageGetter {
 		return result;
 	}
 
-	public String saveToCache(InputStream newAvatarStream) throws IOException {
+	public String saveToCache(InputStream newAvatarStream, String prefix) throws IOException {
 		if (newAvatarStream==null)
 			return null;
-		String fileName = UUID.randomUUID().toString();
+		String fileName = prefix+"-"+UUID.randomUUID().toString();
 		File result = new File(context.getCacheDir(), fileName);
 		FileOutputStream cacheStream = new FileOutputStream(result);
 		byte[]buf = new byte[2048];
@@ -223,7 +239,7 @@ class avatarLoaderTask extends AsyncTask<Void, Void, Drawable> {
 			if (meta.URL!=null){
 				InputStream newAvatarStream = null;
 				newAvatarStream = FLDataLoader.fetchAvatar(meta);
-				cacheID = mImageFactory.saveToCache(newAvatarStream);
+				cacheID = mImageFactory.saveToCache(newAvatarStream, "avatar");
 			}
 
 			ContentValues newCachedAvatar = new ContentValues();

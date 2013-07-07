@@ -1,11 +1,21 @@
 package ru.ith.android.flocal.engine;
 
 import android.app.Activity;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.text.Html;
 import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.method.BaseMovementMethod;
 import android.text.method.LinkMovementMethod;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.ImageSpan;
+import android.text.style.StrikethroughSpan;
+import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,9 +27,18 @@ import android.widget.Toast;
 
 import com.commonsware.cwac.endless.EndlessAdapter;
 
+import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.WeakHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -40,23 +59,40 @@ public class PostListAdapter extends EndlessAdapter  {
     private final ArrayAdapter<FLMessageWrapper> data;
     private final Activity ctxt;
 	private final ListView target;
+	private final static Executor ImageLoader = new ThreadPoolExecutor(3,5,5, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 
     public PostListAdapter(FLThreadHeader thread, final Activity ctxt, final ListView target, final ImageFactory imageGetter, final Html.TagHandler tagHandler) {
         super(new ArrayAdapter<FLMessageWrapper>(ctxt, R.layout.thread_entry){
-			Map<Long, View> cachedMessageViews = new WeakHashMap<Long, View>();
+			Map<Long, Reference<View>> cachedMessageViews = new HashMap<Long, Reference<View>>();
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
 				FLMessageWrapper item = getItem(position);
 				if (item.isLoadingStub)
 					return getPendingViewImpl(parent);
-				View result = cachedMessageViews.get(item.message.getID());
+				Reference<View> resultRef = cachedMessageViews.get(item.message.getID());
+				View result = null;
+				if (resultRef!=null)
+					result = resultRef.get();
 				if (result==null){
                     result = ctxt.getLayoutInflater().inflate(R.layout.post_entry, null, false);
-                    ((TextView)result.findViewById(R.id.postEntryText)).setText(Html.fromHtml(item.message.getPostData(), imageGetter, tagHandler));
+
+					TextView postBodyView = ((TextView)result.findViewById(R.id.postEntryText));
+					SpannableStringBuilder htmlSpannable = null;
+					Spanned spanned = Html.fromHtml(item.message.getPostData());
+					if (spanned instanceof SpannableStringBuilder) {
+						htmlSpannable = (SpannableStringBuilder) spanned;
+					} else {
+						htmlSpannable = new SpannableStringBuilder(spanned);
+					}
+					new ImageLoadTask(htmlSpannable, postBodyView, imageGetter).executeOnExecutor(ImageLoader);
+
+					postBodyView.setText(htmlSpannable);
+
                     ((TextView)result.findViewById(R.id.postEntryAuthor)).setText(item.message.getAuthor());
                     ((TextView)result.findViewById(R.id.postEntryDate)).setText(item.message.getDate());
 					imageGetter.getAvatar(item.message.getAuthor(), ((ImageView)result.findViewById(R.id.postEntryAvatar)));
-					cachedMessageViews.put(item.message.getID(), result);
+
+					cachedMessageViews.put(item.message.getID(), new WeakReference<View>(result));
 				}
                 return result;
             }
@@ -307,6 +343,136 @@ class FLMessageWrapper{
 	public  FLMessageWrapper(){
 		isLoadingStub = true;
 		message = null;
+	}
+
+}
+
+class updateHTMLPack{
+	public final ImageSpan img;
+	public final Drawable d;
+
+	updateHTMLPack(ImageSpan spanToUpdate, Drawable d) {
+		this.img = spanToUpdate;
+		this.d = d;
+	}
+}
+
+class ImageLoadTask extends AsyncTask<Void, updateHTMLPack, Void> {
+
+	DisplayMetrics metrics = new DisplayMetrics();
+	private final SpannableStringBuilder htmlSpannable;
+	private ImageFactory mFactory;
+	private TextView htmlTextView;
+
+	ImageLoadTask(SpannableStringBuilder htmlSpannable, TextView htmlTextView, ImageFactory factory) {
+		this.htmlSpannable = htmlSpannable;
+		mFactory = factory;
+		this.htmlTextView = htmlTextView;
+	}
+
+	@Override
+	protected void onPreExecute() {
+		// we need this to properly scale the images later
+		//getWindowManager().getDefaultDisplay().getMetrics(metrics);
+	}
+
+	@Override
+	protected Void doInBackground(Void... params) {
+		// iterate over all images found in the html
+		for (final ImageSpan img : htmlSpannable.getSpans(0,
+				htmlSpannable.length(), ImageSpan.class)) {
+			Drawable d = getImageFile(img.getSource());
+			d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
+			publishProgress(new updateHTMLPack(img, d));
+		}
+		return null;
+	}
+
+	@Override
+	protected void onProgressUpdate(updateHTMLPack... values) {
+		updateHTMLPack pk = values[0];
+		// now we create a new ImageSpan
+		ImageSpan newImg = new ImageSpan(pk.d, pk.img.getSource());
+
+		// find the position of the old ImageSpan
+		int start = htmlSpannable.getSpanStart(pk.img);
+		int end = htmlSpannable.getSpanEnd(pk.img);
+
+		// remove the old ImageSpan
+		htmlSpannable.removeSpan(pk.img);
+
+		// add the new ImageSpan
+		htmlSpannable.setSpan(newImg, start, end,
+				Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+		// finally we have to update the TextView with our
+		// updates Spannable to display the image
+		htmlTextView.setText(htmlSpannable);
+	}
+
+	//	@Override
+//	protected void onProgressUpdate(ImageSpan... values) {
+//
+//		// save ImageSpan to a local variable just for convenience
+//		ImageSpan img = values[0];
+//
+//		// now we get the File object again. so remeber to always return
+//		// the same file for the same ImageSpan object
+//		File cache = null;//getImageFile(img);
+//
+//		// if the file exists, show it
+//		if (cache.isFile()) {
+//
+//			// first we need to get a Drawable object
+//			Drawable d = new BitmapDrawable(getResources(),
+//					cache.getAbsolutePath());
+//
+//			// next we do some scaling
+//			int width, height;
+//			int originalWidthScaled = (int) (d.getIntrinsicWidth() * metrics.density);
+//			int originalHeightScaled = (int) (d.getIntrinsicHeight() * metrics.density);
+//			if (originalWidthScaled > metrics.widthPixels) {
+//				height = d.getIntrinsicHeight() * metrics.widthPixels
+//						/ d.getIntrinsicWidth();
+//				width = metrics.widthPixels;
+//			} else {
+//				height = originalHeightScaled;
+//				width = originalWidthScaled;
+//			}
+//
+//			// it's important to call setBounds otherwise the image will
+//			// have a size of 0px * 0px and won't show at all
+//			d.setBounds(0, 0, width, height);
+//
+//			// now we create a new ImageSpan
+//			ImageSpan newImg = new ImageSpan(d, img.getSource());
+//
+//			// find the position of the old ImageSpan
+//			int start = htmlSpannable.getSpanStart(img);
+//			int end = htmlSpannable.getSpanEnd(img);
+//
+//			// remove the old ImageSpan
+//			htmlSpannable.removeSpan(img);
+//
+//			// add the new ImageSpan
+//			htmlSpannable.setSpan(newImg, start, end,
+//					Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+//
+//			// finally we have to update the TextView with our
+//			// updates Spannable to display the image
+//			htmlTextView.setText(htmlSpannable);
+//		}
+//	}
+
+	private TreeMap<String, Drawable> cache = new TreeMap<String, Drawable>();
+
+	private Drawable getImageFile(String src) {
+		Drawable res;
+		if ((res = cache.get(src))==null){
+			res = mFactory.getDrawable(src);
+			cache.put(src, res);
+		}
+		return res;
 	}
 
 }
