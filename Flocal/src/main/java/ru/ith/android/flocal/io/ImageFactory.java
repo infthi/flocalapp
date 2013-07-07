@@ -3,7 +3,6 @@ package ru.ith.android.flocal.io;
 import android.R;
 import android.app.Activity;
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -11,10 +10,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.text.Html;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.TypedValue;
 import android.widget.ImageView;
 
 import java.io.File;
@@ -24,8 +21,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,39 +35,67 @@ import ru.ith.lib.flocal.data.AvatarMetaData;
 /**
  * Created by adminfthi on 28.06.13.
  */
-public class ImageFactory implements Html.ImageGetter {
+public class ImageFactory {
 	private final Activity context;
-	final SQLiteDatabase DB;
+	final SQLiteDatabase avatarDB;
+	final SQLiteDatabase uploadDB;
+	public final float dpK;
 
 	public ImageFactory(Activity context) {
 		this.context = context;
-		DB = new AvatarCacheDB(context).getWritableDatabase();
+		avatarDB = new AvatarCacheDB(context).getWritableDatabase();
+		uploadDB = new UploadCacheDB(context).getWritableDatabase();
 		DisplayMetrics dm = new DisplayMetrics();
 		context.getWindowManager().getDefaultDisplay().getMetrics(dm);
-		float density = dm.density;
+		dpK = dm.density;
 	}
 
-	@Override
 	public Drawable getDrawable(String source) {
+		String whereClause =  UploadCacheDB.ROW_ID + "= ?";
+		String ID = source.substring(source.lastIndexOf('/'));
+		String[] whereValues = new String[]{ID};
 		try {
+			//first: check out cache
+			Cursor c = null;
 			try {
-				URL url = new URL("http://forumlocal.ru"+source);
-				HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-				connection.setDoInput(true);
-				connection.connect();
-				InputStream input = connection.getInputStream();
-				Bitmap myBitmap = BitmapFactory.decodeStream(input);
-				myBitmap.toString();
-			} catch (IOException e) {
-				e.printStackTrace();
+				c = uploadDB.query(UploadCacheDB.UPLOAD_TABLE, new String[]{UploadCacheDB.ROW_CACHED_FILE},whereClause, whereValues, null, null, null);
+				if (c.getCount()>0) {
+					c.moveToNext();
+					String cachedFileName = c.getString(0);
+					if (cachedFileName == null)
+						return null;
+					Drawable result = loadFromCache(cachedFileName);
+					if (result != null){
+						ContentValues updatedDate=new ContentValues();
+						updatedDate.put(UploadCacheDB.ROW_LAST_CHECKED, System.currentTimeMillis());
+						uploadDB.update(UploadCacheDB.UPLOAD_TABLE, updatedDate, whereClause, whereValues);
+							return result;
+					}
+					c.close();
+					c = null;
+					uploadDB.delete(UploadCacheDB.UPLOAD_TABLE, whereClause, whereValues);
+				}
+			} finally {
+				if (c!=null)
+					c.close();
 			}
-			InputStream fis = FLDataLoader.fetchFile(source);
-			String id = saveToCache(fis, "file");
-			return loadFromCache(id);
-//			Bitmap largeAvatar = BitmapFactory.decodeStream(fis, null, new BitmapFactory.Options());
-//			largeAvatar = Bitmap.createScaledBitmap(largeAvatar, 30, 30, true);
-//			return new BitmapDrawable(null, largeAvatar);
-		} catch (IOException e) {
+
+			String cacheID = null;
+			InputStream newUploadStream = null;
+			newUploadStream = FLDataLoader.fetchFile(source);
+			cacheID = saveToCache(newUploadStream, "file");
+
+			ContentValues newCachedFile = new ContentValues();
+			newCachedFile.put(UploadCacheDB.ROW_ID, ID);
+			newCachedFile.put(UploadCacheDB.ROW_CACHED_FILE, cacheID);
+			newCachedFile.put(UploadCacheDB.ROW_LAST_CHECKED, System.currentTimeMillis());
+			uploadDB.insert(UploadCacheDB.UPLOAD_TABLE, null, newCachedFile);
+
+			if (cacheID==null)
+				return null;
+
+			return loadFromCache(cacheID);
+		} catch (Exception e1) {
 			return null;
 		}
 	}
@@ -196,7 +219,7 @@ class avatarLoaderTask extends AsyncTask<Void, Void, Drawable> {
 			//first: check out cache
 			Cursor c = null;
 			try {
-				c = mImageFactory.DB.query(AvatarCacheDB.AVATAR_TABLE, new String[]{AvatarCacheDB.ROW_CACHED_FILE, AvatarCacheDB.ROW_LAST_CHECKED},whereClause, whereValues, null, null, null);
+				c = mImageFactory.avatarDB.query(AvatarCacheDB.AVATAR_TABLE, new String[]{AvatarCacheDB.ROW_CACHED_FILE, AvatarCacheDB.ROW_LAST_CHECKED},whereClause, whereValues, null, null, null);
 				if (c.getCount()>0) {
 					c.moveToNext();
 					String cachedFileName = c.getString(0);
@@ -219,13 +242,13 @@ class avatarLoaderTask extends AsyncTask<Void, Void, Drawable> {
 						if (result != null){
 							ContentValues updatedDate=new ContentValues();
 							updatedDate.put(AvatarCacheDB.ROW_LAST_CHECKED, System.currentTimeMillis());
-							mImageFactory.DB.update(AvatarCacheDB.AVATAR_TABLE, updatedDate, whereClause, whereValues);
+							mImageFactory.avatarDB.update(AvatarCacheDB.AVATAR_TABLE, updatedDate, whereClause, whereValues);
 							return result;
 						}
 					}
 					c.close();
 					c = null;
-					mImageFactory.DB.delete(AvatarCacheDB.AVATAR_TABLE, whereClause, whereValues);
+					mImageFactory.avatarDB.delete(AvatarCacheDB.AVATAR_TABLE, whereClause, whereValues);
 				}
 			} finally {
 				if (c!=null)
@@ -246,7 +269,7 @@ class avatarLoaderTask extends AsyncTask<Void, Void, Drawable> {
 			newCachedAvatar.put(AvatarCacheDB.ROW_USER, mUser);
 			newCachedAvatar.put(AvatarCacheDB.ROW_CACHED_FILE, cacheID);
 			newCachedAvatar.put(AvatarCacheDB.ROW_LAST_CHECKED, System.currentTimeMillis());
-			mImageFactory.DB.insert(AvatarCacheDB.AVATAR_TABLE, null, newCachedAvatar);
+			mImageFactory.avatarDB.insert(AvatarCacheDB.AVATAR_TABLE, null, newCachedAvatar);
 
 			if (cacheID==null)
 				return null;

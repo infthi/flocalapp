@@ -382,7 +382,7 @@ class ImageLoadTask extends AsyncTask<Void, updateHTMLPack, Void> {
 		for (final ImageSpan img : htmlSpannable.getSpans(0,
 				htmlSpannable.length(), ImageSpan.class)) {
 			Drawable d = getImageFile(img.getSource());
-			d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
+			d.setBounds(0, 0, (int) (d.getIntrinsicWidth()*mFactory.dpK*1.5), (int) (d.getIntrinsicHeight()*mFactory.dpK*1.5));
 			publishProgress(new updateHTMLPack(img, d));
 		}
 		return null;
@@ -409,60 +409,6 @@ class ImageLoadTask extends AsyncTask<Void, updateHTMLPack, Void> {
 		// updates Spannable to display the image
 		htmlTextView.setText(htmlSpannable);
 	}
-
-	//	@Override
-//	protected void onProgressUpdate(ImageSpan... values) {
-//
-//		// save ImageSpan to a local variable just for convenience
-//		ImageSpan img = values[0];
-//
-//		// now we get the File object again. so remeber to always return
-//		// the same file for the same ImageSpan object
-//		File cache = null;//getImageFile(img);
-//
-//		// if the file exists, show it
-//		if (cache.isFile()) {
-//
-//			// first we need to get a Drawable object
-//			Drawable d = new BitmapDrawable(getResources(),
-//					cache.getAbsolutePath());
-//
-//			// next we do some scaling
-//			int width, height;
-//			int originalWidthScaled = (int) (d.getIntrinsicWidth() * metrics.density);
-//			int originalHeightScaled = (int) (d.getIntrinsicHeight() * metrics.density);
-//			if (originalWidthScaled > metrics.widthPixels) {
-//				height = d.getIntrinsicHeight() * metrics.widthPixels
-//						/ d.getIntrinsicWidth();
-//				width = metrics.widthPixels;
-//			} else {
-//				height = originalHeightScaled;
-//				width = originalWidthScaled;
-//			}
-//
-//			// it's important to call setBounds otherwise the image will
-//			// have a size of 0px * 0px and won't show at all
-//			d.setBounds(0, 0, width, height);
-//
-//			// now we create a new ImageSpan
-//			ImageSpan newImg = new ImageSpan(d, img.getSource());
-//
-//			// find the position of the old ImageSpan
-//			int start = htmlSpannable.getSpanStart(img);
-//			int end = htmlSpannable.getSpanEnd(img);
-//
-//			// remove the old ImageSpan
-//			htmlSpannable.removeSpan(img);
-//
-//			// add the new ImageSpan
-//			htmlSpannable.setSpan(newImg, start, end,
-//					Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-//
-//			// finally we have to update the TextView with our
-//			// updates Spannable to display the image
-//			htmlTextView.setText(htmlSpannable);
-//		}
-//	}
 
 	private TreeMap<String, Drawable> cache = new TreeMap<String, Drawable>();
 
