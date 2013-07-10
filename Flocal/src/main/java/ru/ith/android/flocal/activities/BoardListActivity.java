@@ -67,7 +67,7 @@ public class BoardListActivity extends ForumActivity {
 	}
 
 	@Override
-	void refresh() {
+	void refreshImpl() {
 		List<FLBoard> data;
 		try {
 			data = FLDataLoader.listBoards(SessionContainer.getSessionInstance());

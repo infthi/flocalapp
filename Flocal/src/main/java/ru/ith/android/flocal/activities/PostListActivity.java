@@ -53,7 +53,7 @@ public class PostListActivity extends ForumActivity {
     }
 
     @Override
-    void refresh() {
+    void refreshImpl() {
         adapter.refresh();
     }
 

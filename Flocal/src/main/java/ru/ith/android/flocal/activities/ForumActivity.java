@@ -97,25 +97,20 @@ public abstract class ForumActivity extends Activity {
 						} catch (FLException e) {
 							errorString = e.getMessage();
 							return Boolean.FALSE;
+						} finally {
+							refresh();
 						}
 					}
 
 					@Override
 					protected void onPostExecute(final Boolean success) {
 						super.onPostExecute(success);
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								progress.dismiss();
-								if (success){
-									loginDialog.dismiss();
-									refresh();
-									invalidateOptionsMenu();
-								}
-								else
-									Toast.makeText(loginDialog.getContext(), errorString, 5);
-							}
-						});
+						progress.dismiss();
+						if (success) {
+							loginDialog.dismiss();
+							invalidateOptionsMenu();
+						} else
+							Toast.makeText(loginDialog.getContext(), errorString, Toast.LENGTH_LONG).show();
 					}
 				}.execute(loginText.getText().toString(), passText.getText().toString());
 			}
@@ -138,11 +133,11 @@ public abstract class ForumActivity extends Activity {
 				} catch (FLException e) {
 					Log.wtf(FLDataLoader.FLOCAL_APP_SIGN, e.toString());
 				} finally {
+					refresh();
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
 							invalidateOptionsMenu();
-							refresh();
 							progress.dismiss();
 						}
 					});
@@ -151,7 +146,25 @@ public abstract class ForumActivity extends Activity {
 		}).start();
 	}
 
-	abstract void refresh();
+	protected final void refresh(){
+		refreshTask.cancel();
+		try {
+			refreshImpl();
+		} finally {
+			makeRefreshTask(getRefreshPeriod());
+		}
+	}
+	private void makeRefreshTask(long offset){
+		refreshTask = new TimerTask() {
+			@Override
+			public void run() {
+				refresh();
+			};
+		};
+		refresher.schedule(refreshTask, offset);
+	}
+
+	abstract void refreshImpl();
 
     abstract long getRefreshPeriod();
 
@@ -167,13 +180,7 @@ public abstract class ForumActivity extends Activity {
         super.onResume();
         MessageProcessor.instance.setContext(this);
         refresher = new Timer("Thread_list_refresher", true);
-        refreshTask = new TimerTask() {
-            @Override
-            public void run() {
-                refresh();
-            };
-        };
-        refresher.scheduleAtFixedRate(refreshTask, getStartRefreshPeriod(), getRefreshPeriod());
+		makeRefreshTask(getStartRefreshPeriod());
     }
 
     @Override
