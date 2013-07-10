@@ -155,6 +155,10 @@ public abstract class ForumActivity extends Activity {
 
     abstract long getRefreshPeriod();
 
+	protected long getStartRefreshPeriod(){
+		return getRefreshPeriod();
+	}
+
     private Timer refresher = null;
     private TimerTask refreshTask = null;
 
@@ -169,7 +173,7 @@ public abstract class ForumActivity extends Activity {
                 refresh();
             };
         };
-        refresher.scheduleAtFixedRate(refreshTask, getRefreshPeriod(), getRefreshPeriod());
+        refresher.scheduleAtFixedRate(refreshTask, getStartRefreshPeriod(), getRefreshPeriod());
     }
 
     @Override
