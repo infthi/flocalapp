@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-sdk
-        android:minSdkVersion="9"
+        android:minSdkVersion="16"
         android:targetSdkVersion="16" />
 
     <application
@@ -31,6 +31,31 @@
         <activity
             android:name="ru.ith.android.flocal.activities.PostListActivity"
             android:label="@string/title_activity_post_list_adapter" >
+        </activity>
+        <activity
+            android:name="ru.ith.android.flocal.activities.UploadActivity"
+            android:label="@string/title_activity_upload" >
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="image/*" />
+            </intent-filter>
         </activity>
     </application>
 

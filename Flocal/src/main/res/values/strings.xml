@@ -17,5 +17,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_post_list_adapter">Flocal</string>
     <string name="post_option_reply">Reply</string>
+    <string name="title_activity_upload">UploadActivity</string>
+    <string name="title_activity_main">MainActivity</string>
 
 </resources>

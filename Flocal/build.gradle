@@ -1,23 +1,24 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:0.7.+'
-    }
-}
 apply plugin: 'android'
-dependencies {
-    compile files('libs/android-support-v4.jar')
-    compile files('libs/jsoup-1.7.2.jar')
-}
 
 android {
     compileSdkVersion 17
-    buildToolsVersion "17.0.0"
+    buildToolsVersion "19.1"
 
     defaultConfig {
-        minSdkVersion 7
-        targetSdkVersion 16
+        applicationId "infthi.flocal"
+        minSdkVersion 15
+        targetSdkVersion 19
+        versionCode 1
+        versionName "1.0"
     }
+    buildTypes {
+        release {
+            runProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
 }
