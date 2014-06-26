@@ -31,17 +31,16 @@
         <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/login_dialog_OK_button"
-                android:id="@+id/OKButton"
-                android:layout_gravity="center_horizontal|top"
-                android:layout_weight="50"/>
-
-        <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:text="@string/login_dialog_cancel_button"
                 android:id="@+id/cancelButton"
                 android:layout_gravity="center_horizontal|top"
                 android:layout_weight="50"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/login_dialog_OK_button"
+            android:id="@+id/OKButton"
+            android:layout_gravity="center_horizontal|top"
+            android:layout_weight="50"/>
     </LinearLayout>
 </LinearLayout>

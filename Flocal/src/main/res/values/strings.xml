@@ -10,8 +10,8 @@
     <string name="login_dialog_pass_default">Password</string>
     <string name="login_dialog_OK_button">OK</string>
     <string name="login_dialog_cancel_button">Cancel</string>
-    <string name="login_dialog_loginning">Logging in...</string>
-    <string name="login_dialog_logging_out">Logging out...</string>
+    <string name="login_dialog_loginning">Logging in…</string>
+    <string name="login_dialog_logging_out">Logging out…</string>
     <string name="title_activity_thread_list">Flocal</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
