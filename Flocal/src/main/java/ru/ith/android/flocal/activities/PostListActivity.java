@@ -3,17 +3,16 @@ package ru.ith.android.flocal.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextMenu;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
+import ru.ith.android.flocal.R;
 import ru.ith.android.flocal.engine.MessageProcessor;
+import ru.ith.android.flocal.engine.PostListAdapter;
 import ru.ith.android.flocal.io.ImageFactory;
 import ru.ith.android.flocal.views.OverscrollableList;
-import ru.ith.android.flocal.R;
-import ru.ith.android.flocal.engine.PostListAdapter;
 import ru.ith.android.flocal.views.overScrollListener;
 import ru.ith.lib.flocal.data.FLThreadHeader;
 
@@ -36,7 +35,10 @@ public class PostListActivity extends ForumActivity {
         String threadName = intent.getStringExtra(KEY_THREAD_NAME);
         String threadSrc =  intent.getStringExtra(KEY_THREAD_SRC);
         FLThreadHeader readThread = new FLThreadHeader(threadName, null, 0, 0, threadID, threadUnreadID, false, threadSrc);
-        setTitle(threadName); //TODO: set scrollable
+
+        {
+            setTitle(threadName); //TODO: set scrollable
+        }
         OverscrollableList postList = (OverscrollableList) findViewById(R.id.postListView);
         adapter = new PostListAdapter(readThread, this, postList, new ImageFactory(this), MessageProcessor.instance);
         postList.setAdapter(adapter);

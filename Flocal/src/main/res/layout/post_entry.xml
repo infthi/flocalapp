@@ -1,59 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-<LinearLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        xmlns:android="http://schemas.android.com/apk/res/android">
+        android:background="@drawable/card">
 
-    <ImageView
+        <ImageView
+            android:id="@id/postEntryAvatar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@id/postEntryAvatar"
             android:layout_gravity="center_horizontal|top"
+            android:maxHeight="80dp"
             android:maxWidth="80dp"
-            android:minWidth="80dp"
-            android:maxHeight="80dp"/>
+            android:minWidth="80dp" />
 
-    <LinearLayout
-            android:orientation="vertical"
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_gravity="center_horizontal|top">
+            android:layout_gravity="center_horizontal|top"
+            android:orientation="vertical">
 
-        <RelativeLayout
+            <RelativeLayout
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent">
 
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="%author%"
+                <TextView
                     android:id="@id/postEntryAuthor"
-                    android:layout_gravity="left|center_vertical"
-                    android:textStyle="bold"
-                    android:layout_marginLeft="10dp"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentLeft="true"/>
-
-            <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_gravity="left|center_vertical"
+                    android:layout_marginLeft="10dp"
+                    android:text="%author%"
+                    android:textStyle="bold" />
+
+                <TextView
                     android:id="@id/postEntryDate"
-                    android:layout_centerVertical="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
                     android:text="%date%"
-                    android:textColor="#0003ff"/>
+                    android:textColor="#0003ff" />
 
-        </RelativeLayout>
+            </RelativeLayout>
 
-        <TextView
+            <TextView
+                android:id="@id/postEntryText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="%message%"
-                android:id="@id/postEntryText"
-                android:textIsSelectable="true"/>
+                android:textIsSelectable="true" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
-</LinearLayout>
+</FrameLayout>
