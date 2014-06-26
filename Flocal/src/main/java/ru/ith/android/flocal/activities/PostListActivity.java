@@ -39,7 +39,8 @@ public class PostListActivity extends ForumActivity {
         {
             setTitle(threadName); //TODO: set scrollable
         }
-        OverscrollableList postList = (OverscrollableList) findViewById(R.id.postListView);
+        final OverscrollableList postList = (OverscrollableList) findViewById(R.id.postListView);
+//        postList.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS); //to make post items receive click items
         adapter = new PostListAdapter(readThread, this, postList, new ImageFactory(this), MessageProcessor.instance);
         postList.setAdapter(adapter);
         if (threadUnreadID>=0)
@@ -51,6 +52,14 @@ public class PostListActivity extends ForumActivity {
                     }
                 }
             });
+        postList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View sender, int position, long id) {
+                registerForContextMenu(sender);
+                openContextMenu(sender);
+                unregisterForContextMenu(sender);
+            }
+        });
         registerForContextMenu(postList);
     }
 

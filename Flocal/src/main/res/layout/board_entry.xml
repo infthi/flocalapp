@@ -1,25 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-<LinearLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        xmlns:android="http://schemas.android.com/apk/res/android">
+        android:background="@drawable/card">
 
-    <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <CheckBox
             android:id="@+id/boardEntryUnread"
-            android:layout_gravity="center_horizontal|top"
-            android:enabled="false"
-            android:checked="false"
-            android:focusableInTouchMode="false"
-            android:focusable="false"/>
-
-    <ru.ith.android.flocal.views.AutoScrollableTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:id="@+id/boardEntryText"
             android:layout_gravity="center_horizontal|top"
+            android:checked="false"
+            android:enabled="false"
+            android:focusable="false"
+            android:focusableInTouchMode="false" />
+
+        <ru.ith.android.flocal.views.AutoScrollableTextView
+            android:id="@+id/boardEntryText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|top"
+            android:singleLine="true"
             android:text="board-name-stub"/>
-</LinearLayout>
+    </LinearLayout>
+</FrameLayout>
