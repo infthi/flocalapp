@@ -9,10 +9,10 @@ import org.jsoup.select.Elements;
 import ru.ith.lib.webcrawl.WebResponseMetadata;
 import ru.ith.lib.webcrawl.WebResponseReader;
 
-public class HTMLResponce extends WebResponseReader {
+public class HTMLResponse extends WebResponseReader {
 	private final Document d;
 
-	public HTMLResponce(WebResponseMetadata metaData, InputStream stream) throws IOException {
+	public HTMLResponse(WebResponseMetadata metaData, InputStream stream) throws IOException {
 		super(metaData, stream);
 		d = Jsoup.parse(stream, metaData.getEncoding(), "");
 	}

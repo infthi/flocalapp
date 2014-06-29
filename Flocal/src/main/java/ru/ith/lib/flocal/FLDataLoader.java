@@ -19,10 +19,9 @@ import ru.ith.lib.flocal.data.FLMessageSet;
 import ru.ith.lib.flocal.data.FLThreadHeader;
 import ru.ith.lib.flocal.data.FLThreadPageSet;
 import ru.ith.lib.webcrawl.ConnectionFactory;
-import ru.ith.lib.webcrawl.WebResponseReader;
 import ru.ith.lib.webcrawl.providers.BinaryResponse;
 import ru.ith.lib.webcrawl.providers.HEADResponse;
-import ru.ith.lib.webcrawl.providers.HTMLResponce;
+import ru.ith.lib.webcrawl.providers.HTMLResponse;
 import ru.ith.lib.webcrawl.providers.ProviderEnum;
 
 /**
@@ -35,7 +34,7 @@ public class FLDataLoader {
     public static final String generateLoginData(String login, String password)
             throws FLException {
         try {
-            HTMLResponce rdr = doQuery("/login.php?showlite=sl", null);
+            HTMLResponse rdr = doQuery("/login.php?showlite=sl", null);
             Elements postKeyElement = rdr
                     .getAll("form > input[name=postdata_protection_key]");
             if (postKeyElement.isEmpty())
@@ -52,7 +51,7 @@ public class FLDataLoader {
             loginData.put("postdata_protection_key", postKey);
             loginData.put("buttlogin", "1");
 
-            rdr = (HTMLResponce) ConnectionFactory.doQuery(FLOCAL_HOST,
+            rdr = (HTMLResponse) ConnectionFactory.doQuery(FLOCAL_HOST,
                     "/start_page.php?showlite=sl", null, loginData,
                     rdr.metaData.getEncoding(), ProviderEnum.HTML);
             String mysess = rdr.metaData.getCookie("w3t_w3t_mysess");
@@ -68,8 +67,8 @@ public class FLDataLoader {
         }
     }
 
-    private static HTMLResponce doQuery(String url, FLSession session) throws IOException {
-        return (HTMLResponce) ConnectionFactory.doQuery(FLOCAL_HOST, url,
+    private static HTMLResponse doQuery(String url, FLSession session) throws IOException {
+        return (HTMLResponse) ConnectionFactory.doQuery(FLOCAL_HOST, url,
                 (session==null)?null:session.getSessionCookies(), ProviderEnum.HTML);
     }
 
@@ -77,7 +76,7 @@ public class FLDataLoader {
         if (session.isAnonymous())
             return;
         try{
-            HTMLResponce keyPage = doQuery("/logout.php?showlite=sl", session);
+            HTMLResponse keyPage = doQuery("/logout.php?showlite=sl", session);
             Elements logoutLinkSet = keyPage.getAll("td i a[href]");
             if (!logoutLinkSet.isEmpty()) {
                 String logoutLink = logoutLinkSet.first().attr("href");
@@ -89,7 +88,7 @@ public class FLDataLoader {
                         logoutLink = logoutLink.substring(index, endIndex);
                     else
                         logoutLink = logoutLink.substring(index);
-                    HTMLResponce clean = doQuery("/logout.php?key="+logoutLink, session);
+                    HTMLResponse clean = doQuery("/logout.php?key="+logoutLink, session);
                     return;
                 }
             }
@@ -102,7 +101,7 @@ public class FLDataLoader {
     public static LinkedList<FLBoard> listBoards(FLSession session) throws FLException {
         LinkedList<FLBoard> result = new LinkedList<FLBoard>();
         try {
-            HTMLResponce mainPage = doQuery("/ubbthreads.php?showlite=sl", session);
+            HTMLResponse mainPage = doQuery("/ubbthreads.php?showlite=sl", session);
             for (Element e : mainPage.getAll("a[href*=postlist.php]")) {
                 boolean hasUnread = false;
                 if (e.previousSibling().nodeName().startsWith("#")) {// #text:
@@ -151,7 +150,7 @@ public class FLDataLoader {
         //TODO: add some structure which will contain data on next page availability
         LinkedList<FLThreadHeader> result = new LinkedList<FLThreadHeader>();
         try {
-            HTMLResponce mainPage = doQuery("/postlist.php?Board="
+            HTMLResponse mainPage = doQuery("/postlist.php?Board="
                     + board.boardURIName + "&sb=5&showlite=sl&page=" + page+((board.src==null)?"":("&src="+board.src)), session);
             for (Element e : mainPage.getAll("a[href*=showflat.php]")) {
                 int numUnread, numUnreadDisc = 0;
@@ -242,7 +241,7 @@ public class FLDataLoader {
         }
     }
 
-	public static FLThreadPageSet parseHeader(HTMLResponce mainPage) throws IOException {
+	public static FLThreadPageSet parseHeader(HTMLResponse mainPage) throws IOException {
 		int threadOffset = 0;
 		boolean forumBug = false;
 		boolean hasMorePages = false;
@@ -341,7 +340,7 @@ public class FLDataLoader {
             String URL = "/showflat.php?showlite=l&Number="+ loadID
                     +((skip>=0)?("&tistart="+skip):"")
                     +((thread.src==null)?"":("&src="+thread.src));
-            HTMLResponce mainPage = doQuery(URL, session);
+            HTMLResponse mainPage = doQuery(URL, session);
 
 			FLThreadPageSet header = parseHeader(mainPage);
 
@@ -459,7 +458,7 @@ public class FLDataLoader {
 	public static AvatarMetaData getAvatarMetadata(FLSession session, String user, boolean onlyURL) throws FLException {
 		try {
 			String URL = "/showprofile.php?showlite=sl&User="+ user;
-			HTMLResponce mainPage = doQuery(URL, session);
+			HTMLResponse mainPage = doQuery(URL, session);
 
 			String imgURL = null;
 			long lastUpdated = -1;

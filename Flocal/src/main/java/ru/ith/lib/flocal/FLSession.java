@@ -1,24 +1,8 @@
 package ru.ith.lib.flocal;
 
-import java.io.IOException;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
-import org.jsoup.select.Elements;
-
-import ru.ith.lib.flocal.data.FLBoard;
-import ru.ith.lib.flocal.data.FLMessage;
-import ru.ith.lib.flocal.data.FLMessageSet;
-import ru.ith.lib.flocal.data.FLThreadHeader;
-import ru.ith.lib.webcrawl.ConnectionFactory;
-import ru.ith.lib.webcrawl.providers.HTMLResponce;
-import ru.ith.lib.webcrawl.providers.ProviderEnum;
 
 public class FLSession {
 	private final Map<String, String> sessionCookies;

@@ -5,8 +5,8 @@ import java.io.InputStream;
 
 import ru.ith.lib.webcrawl.providers.BinaryResponse;
 import ru.ith.lib.webcrawl.providers.HEADResponse;
+import ru.ith.lib.webcrawl.providers.HTMLResponse;
 import ru.ith.lib.webcrawl.providers.ProviderEnum;
-import ru.ith.lib.webcrawl.providers.HTMLResponce;
 
 public abstract class WebResponseReader {
 	public final WebResponseMetadata metaData;
@@ -56,7 +56,7 @@ public abstract class WebResponseReader {
 		
 		switch (provider) {
 		case HTML:
-			return new HTMLResponce(metaData, stream);
+			return new HTMLResponse(metaData, stream);
 		case HEAD:
 			return new HEADResponse(metaData, stream);
 		case BINARY:
