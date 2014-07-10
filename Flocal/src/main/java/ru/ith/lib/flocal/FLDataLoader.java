@@ -443,7 +443,7 @@ public class FLDataLoader {
     private static String generatePostHTML(Element elt){
         for (Element link: elt.select("a")){
             if (link.attr("href").startsWith("/")){
-                link.attr("href", "flocal:/"+link.attr("href"));
+                link.attr("href", "http://" + FLOCAL_HOST + link.attr("href"));
                 List<Node> children = link.childNodes();
                 if (children.size()==1){
                     Node possibleTextNode = children.get(0);

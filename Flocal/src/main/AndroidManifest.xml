@@ -57,6 +57,18 @@
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".LinkHandlerActivity"
+            android:label="@string/title_activity_link_handler"
+            android:noHistory="true">
+            <intent-filter>
+                <data
+                    android:host="forumbgz.ru"
+                    android:scheme="http" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
