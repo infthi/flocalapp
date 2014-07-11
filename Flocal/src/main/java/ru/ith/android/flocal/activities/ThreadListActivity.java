@@ -2,7 +2,6 @@ package ru.ith.android.flocal.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -34,6 +33,7 @@ public class ThreadListActivity extends ForumActivity {
         String boardURI = intent.getStringExtra(KEY_BOARD);
         String boardName = intent.getStringExtra(KEY_BOARD_NAME);
         String boardSrc = intent.getStringExtra(KEY_BOARD_SRC);
+        //TODO: fetch board name from fetched thread list, since it may not be set in the intent
         board = new FLBoard(boardName, boardURI, false, boardSrc);
         setTitle(boardName);
         ListView threadList = (ListView) findViewById(R.id.threadListView);
@@ -44,8 +44,8 @@ public class ThreadListActivity extends ForumActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 FLThreadHeader selectedThread = (FLThreadHeader) adapterView.getItemAtPosition(i);
                 Intent intent = new Intent(ThreadListActivity.this, PostListActivity.class);
-                intent.putExtra(PostListActivity.KEY_THREAD, selectedThread.getID());
-                intent.putExtra(PostListActivity.KEY_THREAD_UNREAD, selectedThread.getUnreadID());
+                intent.putExtra(PostListActivity.KEY_THREAD, String.valueOf(selectedThread.getID()));
+                intent.putExtra(PostListActivity.KEY_THREAD_UNREAD, String.valueOf(selectedThread.getUnreadID()));
                 intent.putExtra(PostListActivity.KEY_THREAD_NAME, selectedThread.getName());
                 intent.putExtra(PostListActivity.KEY_THREAD_SRC, selectedThread.src);
                 startActivity(intent);

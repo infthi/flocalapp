@@ -3,7 +3,6 @@ package ru.ith.android.flocal.activities;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.app.TimePickerDialog;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.Menu;
@@ -11,12 +10,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Semaphore;
 
 import ru.ith.android.flocal.R;
 import ru.ith.android.flocal.engine.MessageProcessor;

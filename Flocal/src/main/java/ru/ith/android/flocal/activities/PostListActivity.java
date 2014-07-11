@@ -30,8 +30,19 @@ public class PostListActivity extends ForumActivity {
         setContentView(R.layout.activity_post_list);
         Intent intent = getIntent();
 
-        long threadID = intent.getLongExtra(KEY_THREAD, -1);
-        long threadUnreadID = intent.getLongExtra(KEY_THREAD_UNREAD, -1);
+        String threadIDS = intent.getStringExtra(KEY_THREAD);
+        if (threadIDS == null)
+            threadIDS = "-1";
+        //TODO: separate view of thread with unread messages from the direct link to the message
+        //TODO: fetch thread name from post list
+        String threadUnreadIDS = intent.getStringExtra(KEY_THREAD_UNREAD);
+        if (threadUnreadIDS == null)
+            threadUnreadIDS = "-1";
+
+        final long threadID = Long.valueOf(threadIDS);
+        final long threadUnreadID = Long.valueOf(threadUnreadIDS);
+        //TODO: trycatch
+
         String threadName = intent.getStringExtra(KEY_THREAD_NAME);
         String threadSrc =  intent.getStringExtra(KEY_THREAD_SRC);
         FLThreadHeader readThread = new FLThreadHeader(threadName, null, 0, 0, threadID, threadUnreadID, false, threadSrc);

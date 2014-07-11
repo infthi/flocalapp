@@ -69,31 +69,31 @@ public class FLDataLoader {
 
     private static HTMLResponse doQuery(String url, FLSession session) throws IOException {
         return (HTMLResponse) ConnectionFactory.doQuery(FLOCAL_HOST, url,
-                (session==null)?null:session.getSessionCookies(), ProviderEnum.HTML);
+                (session == null) ? null : session.getSessionCookies(), ProviderEnum.HTML);
     }
 
     public static void logout(FLSession session) throws FLException {
         if (session.isAnonymous())
             return;
-        try{
+        try {
             HTMLResponse keyPage = doQuery("/logout.php?showlite=sl", session);
             Elements logoutLinkSet = keyPage.getAll("td i a[href]");
             if (!logoutLinkSet.isEmpty()) {
                 String logoutLink = logoutLinkSet.first().attr("href");
                 int index = logoutLink.indexOf("key=");
-                if (index>0) {
-                    index+=4;
+                if (index > 0) {
+                    index += 4;
                     int endIndex = logoutLink.indexOf('&', index);
-                    if (endIndex>0)
+                    if (endIndex > 0)
                         logoutLink = logoutLink.substring(index, endIndex);
                     else
                         logoutLink = logoutLink.substring(index);
-                    HTMLResponse clean = doQuery("/logout.php?key="+logoutLink, session);
+                    HTMLResponse clean = doQuery("/logout.php?key=" + logoutLink, session);
                     return;
                 }
             }
             throw new FLException("server error", "Failed to retrieve logout key");
-        } catch (IOException e){
+        } catch (IOException e) {
             throw new FLException("Failed to connect to server", e.getMessage());
         }
     }
@@ -116,8 +116,8 @@ public class FLDataLoader {
 
                     final String src;
                     int srcBeginning = link.indexOf("src=");
-                    if (srcBeginning>=0){
-                        srcBeginning+=4;
+                    if (srcBeginning >= 0) {
+                        srcBeginning += 4;
                         int ending = link.indexOf('&', srcBeginning);
                         if (ending >= 0)
                             src = link.substring(srcBeginning, ending);
@@ -151,7 +151,7 @@ public class FLDataLoader {
         LinkedList<FLThreadHeader> result = new LinkedList<FLThreadHeader>();
         try {
             HTMLResponse mainPage = doQuery("/postlist.php?Board="
-                    + board.boardURIName + "&sb=5&showlite=sl&page=" + page+((board.src==null)?"":("&src="+board.src)), session);
+                    + board.boardURIName + "&sb=5&showlite=sl&page=" + page + ((board.src == null) ? "" : ("&src=" + board.src)), session);
             for (Element e : mainPage.getAll("a[href*=showflat.php]")) {
                 int numUnread, numUnreadDisc = 0;
                 boolean isPinned = false;
@@ -222,7 +222,7 @@ public class FLDataLoader {
                     //in sl-mode, number points to first unread post if we have any unread posts. otherwise it points to first post.
 
                     final int first, firstUnread;
-                    if (numUnread>0){
+                    if (numUnread > 0) {
                         first = -1;
                         firstUnread = Integer.valueOf(id);
                     } else {
@@ -241,93 +241,93 @@ public class FLDataLoader {
         }
     }
 
-	public static FLThreadPageSet parseHeader(HTMLResponse mainPage) throws IOException {
-		int threadOffset = 0;
-		boolean forumBug = false;
-		boolean hasMorePages = false;
+    public static FLThreadPageSet parseHeader(HTMLResponse mainPage) throws IOException {
+        int threadOffset = 0;
+        boolean forumBug = false;
+        boolean hasMorePages = false;
 
-		boolean thisElementIsStaticCounter = false;
-		boolean prevElementWasStaticCounter = false;
-		for (Element threadHeaderElement: mainPage.getAll("table > tbody> tr > td > a + br + br")){
-			//possible values:
-			//Страницы: 1
-			//Страницы: ^1^ | (1)
-			//Страницы: ^0^ | ^20^ | (35) | ^40^ | ^показать все^
-			//Страницы: ^0^ | ^20^ | ^40^ | (45) | ^показать все^
-			//Страницы: ^0^ | 20 | ^40^ | ^показать все^ | ^след. страница^
+        boolean thisElementIsStaticCounter = false;
+        boolean prevElementWasStaticCounter = false;
+        for (Element threadHeaderElement : mainPage.getAll("table > tbody> tr > td > a + br + br")) {
+            //possible values:
+            //Страницы: 1
+            //Страницы: ^1^ | (1)
+            //Страницы: ^0^ | ^20^ | (35) | ^40^ | ^показать все^
+            //Страницы: ^0^ | ^20^ | ^40^ | (45) | ^показать все^
+            //Страницы: ^0^ | 20 | ^40^ | ^показать все^ | ^след. страница^
 
-			Node pageNavigationElement = threadHeaderElement.nextSibling(); //Pages:
-			while (pageNavigationElement!=null){
-				if (pageNavigationElement instanceof TextNode){
-					//bug-related: | after fake "0"
-					String headerText = ((TextNode) pageNavigationElement).text().replaceAll(" ","");
-					if (headerText.indexOf(':')>=0)
-						if (headerText.endsWith("|")&&(!headerText.endsWith(":|"))){
-							thisElementIsStaticCounter = true;
-							threadOffset = 0;
-						}
-					if ((headerText.length()>1)&&headerText.startsWith("|")){
-						int extraFwd = 1;
-						int extraBkwd = headerText.endsWith("|")?1:0;
-						if (headerText.charAt(1)=='('){
-							extraFwd++;
-							extraBkwd++;
-						}
-						headerText = headerText.substring(extraFwd, headerText.length()-extraBkwd);
-						if (!headerText.contains(".")){
-							threadOffset = Integer.valueOf(headerText);
-							thisElementIsStaticCounter = true;
-						}
-					}
-				} else if (pageNavigationElement.nodeName().equals("a")){
-					String href = pageNavigationElement.attr("href");
-					String tistart = extractParam(href, "tistart");
-					if (tistart!=null)
-						if (!tistart.equals("all")){
-							if (prevElementWasStaticCounter)
-								hasMorePages = true;
-							if (tistart.equals("0")){
-								//bug: if request tistart==thread_size+1, we get
-								// first page of thread, but header displays
-								// our effective offset as this wrong tistart.
-								// it's forum's bug
+            Node pageNavigationElement = threadHeaderElement.nextSibling(); //Pages:
+            while (pageNavigationElement != null) {
+                if (pageNavigationElement instanceof TextNode) {
+                    //bug-related: | after fake "0"
+                    String headerText = ((TextNode) pageNavigationElement).text().replaceAll(" ", "");
+                    if (headerText.indexOf(':') >= 0)
+                        if (headerText.endsWith("|") && (!headerText.endsWith(":|"))) {
+                            thisElementIsStaticCounter = true;
+                            threadOffset = 0;
+                        }
+                    if ((headerText.length() > 1) && headerText.startsWith("|")) {
+                        int extraFwd = 1;
+                        int extraBkwd = headerText.endsWith("|") ? 1 : 0;
+                        if (headerText.charAt(1) == '(') {
+                            extraFwd++;
+                            extraBkwd++;
+                        }
+                        headerText = headerText.substring(extraFwd, headerText.length() - extraBkwd);
+                        if (!headerText.contains(".")) {
+                            threadOffset = Integer.valueOf(headerText);
+                            thisElementIsStaticCounter = true;
+                        }
+                    }
+                } else if (pageNavigationElement.nodeName().equals("a")) {
+                    String href = pageNavigationElement.attr("href");
+                    String tistart = extractParam(href, "tistart");
+                    if (tistart != null)
+                        if (!tistart.equals("all")) {
+                            if (prevElementWasStaticCounter)
+                                hasMorePages = true;
+                            if (tistart.equals("0")) {
+                                //bug: if request tistart==thread_size+1, we get
+                                // first page of thread, but header displays
+                                // our effective offset as this wrong tistart.
+                                // it's forum's bug
 
-								Elements postLinks = mainPage.getAll("tr>td>a[name]:not([href])");
-								if (!postLinks.isEmpty()){
-									Element first = postLinks.first();
-									String postID = first.attr("name");
-									if (postID.length()>4){
-										String firstPageID = extractParam(href, "Number");
-										if (firstPageID!=null)
-											if (firstPageID.equals(postID.substring(4))){
-												forumBug = true;
-												thisElementIsStaticCounter = true;
-											}
-									}
-								}
-							}
-						}
-				}
-				prevElementWasStaticCounter = thisElementIsStaticCounter;
-				pageNavigationElement = pageNavigationElement.nextSibling();
-			}
-			break;
-		}
-		return new FLThreadPageSet(forumBug?0:threadOffset, hasMorePages);
-	}
+                                Elements postLinks = mainPage.getAll("tr>td>a[name]:not([href])");
+                                if (!postLinks.isEmpty()) {
+                                    Element first = postLinks.first();
+                                    String postID = first.attr("name");
+                                    if (postID.length() > 4) {
+                                        String firstPageID = extractParam(href, "Number");
+                                        if (firstPageID != null)
+                                            if (firstPageID.equals(postID.substring(4))) {
+                                                forumBug = true;
+                                                thisElementIsStaticCounter = true;
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                }
+                prevElementWasStaticCounter = thisElementIsStaticCounter;
+                pageNavigationElement = pageNavigationElement.nextSibling();
+            }
+            break;
+        }
+        return new FLThreadPageSet(forumBug ? 0 : threadOffset, hasMorePages);
+    }
 
-	private static String extractParam(String from, String what){
-		int tiStartIndex = from.indexOf(what+"=");
-		if (tiStartIndex>=0){
-			tiStartIndex+=what.length()+1;
-			int tiStartEnd = from.indexOf("&", tiStartIndex);
-			if (tiStartEnd>=0)
-				return from.substring(tiStartIndex, tiStartEnd);
-			else
-				return from.substring(tiStartIndex);
-		}
-		return null;
-	}
+    private static String extractParam(String from, String what) {
+        int tiStartIndex = from.indexOf(what + "=");
+        if (tiStartIndex >= 0) {
+            tiStartIndex += what.length() + 1;
+            int tiStartEnd = from.indexOf("&", tiStartIndex);
+            if (tiStartEnd >= 0)
+                return from.substring(tiStartIndex, tiStartEnd);
+            else
+                return from.substring(tiStartIndex);
+        }
+        return null;
+    }
 
     public static FLMessageSet listMessages(FLSession session, FLThreadHeader thread, int skip)
             throws FLException {
@@ -335,14 +335,14 @@ public class FLDataLoader {
         try {
             long loadID = thread.getID();
 
-            if (loadID<0)
+            if (loadID < 0)
                 loadID = thread.getUnreadID();
-            String URL = "/showflat.php?showlite=l&Number="+ loadID
-                    +((skip>=0)?("&tistart="+skip):"")
-                    +((thread.src==null)?"":("&src="+thread.src));
+            String URL = "/showflat.php?showlite=l&Number=" + loadID
+                    + ((skip >= 0) ? ("&tistart=" + skip) : "")
+                    + ((thread.src == null) ? "" : ("&src=" + thread.src));
             HTMLResponse mainPage = doQuery(URL, session);
 
-			FLThreadPageSet header = parseHeader(mainPage);
+            FLThreadPageSet header = parseHeader(mainPage);
 
 
             for (Element mesageHeaderElement : mainPage
@@ -394,27 +394,27 @@ public class FLDataLoader {
 
                 Element ratingNodeContainer = mesageHeaderElement
                         .nextElementSibling();
-                if (ratingNodeContainer.childNodeSize()>0){
+                if (ratingNodeContainer.childNodeSize() > 0) {
                     Node ratingNodeSpan = ratingNodeContainer.childNode(0);
-					final Node ratingNode;
-                    if (ratingNodeSpan.childNodeSize()>0){
+                    final Node ratingNode;
+                    if (ratingNodeSpan.childNodeSize() > 0) {
                         ratingNode = ratingNodeSpan.childNode(0);
                     } else
                         ratingNode = ratingNodeSpan; //anonymous see only text; without buttons
-					if (ratingNode instanceof TextNode)
-						rating = Integer.valueOf(((TextNode) ratingNode)
-								.text());
-					else
-						continue;
+                    if (ratingNode instanceof TextNode)
+                        rating = Integer.valueOf(((TextNode) ratingNode)
+                                .text());
+                    else
+                        continue;
                 } else
                     continue;
 
                 Element textContainer = mesageHeaderElement.parent()
                         .nextElementSibling();
-                if (textContainer.children().size() > 0){
+                if (textContainer.children().size() > 0) {
                     Element textElement = textContainer.child(0);
                     List<Node> children = textElement.childNodes();
-                    for (int i = children.size()-1; i>=0; i--){
+                    for (int i = children.size() - 1; i >= 0; i--) {
                         Node lastNode = children.get(i);
                         if (lastNode.nodeName().equals("br"))
                             lastNode.remove();
@@ -422,8 +422,7 @@ public class FLDataLoader {
                             break;
                     }
                     postHtml.append(generatePostHTML(textElement));
-                }
-                else
+                } else
                     continue;
 
                 FLMessage message = new FLMessage(userName,
@@ -440,12 +439,12 @@ public class FLDataLoader {
         }
     }
 
-    private static String generatePostHTML(Element elt){
-        for (Element link: elt.select("a")){
-            if (link.attr("href").startsWith("/")){
+    private static String generatePostHTML(Element elt) {
+        for (Element link : elt.select("a")) {
+            if (link.attr("href").startsWith("/")) {
                 link.attr("href", "http://" + FLOCAL_HOST + link.attr("href"));
                 List<Node> children = link.childNodes();
-                if (children.size()==1){
+                if (children.size() == 1) {
                     Node possibleTextNode = children.get(0);
                     if (possibleTextNode instanceof TextNode)
                         ((TextNode) possibleTextNode).text("---");
@@ -455,36 +454,36 @@ public class FLDataLoader {
         return elt.html();
     }
 
-	public static AvatarMetaData getAvatarMetadata(FLSession session, String user, boolean onlyURL) throws FLException {
-		try {
-			String URL = "/showprofile.php?showlite=sl&User="+ user;
-			HTMLResponse mainPage = doQuery(URL, session);
+    public static AvatarMetaData getAvatarMetadata(FLSession session, String user, boolean onlyURL) throws FLException {
+        try {
+            String URL = "/showprofile.php?showlite=sl&User=" + user;
+            HTMLResponse mainPage = doQuery(URL, session);
 
-			String imgURL = null;
-			long lastUpdated = -1;
-			for (Element img: mainPage.getAll("td > img[alt]")){
-				imgURL = img.attr("src");
-				if (imgURL.endsWith("nopicture.gif"))
-					imgURL = null;
-				break;
-			}
-			if (!onlyURL){
-				//fetch last-updated
-				HEADResponse metaData = (HEADResponse) ConnectionFactory.doQuery(FLOCAL_HOST, imgURL, null, ProviderEnum.HEAD);
-				lastUpdated = metaData.metaData.getLastModified();
-			}
-			return new AvatarMetaData(imgURL, lastUpdated);
-		} catch (IOException e) {
-			throw new FLException("Failed to retrieve data", e.getMessage());
-		}
-	}
+            String imgURL = null;
+            long lastUpdated = -1;
+            for (Element img : mainPage.getAll("td > img[alt]")) {
+                imgURL = img.attr("src");
+                if (imgURL.endsWith("nopicture.gif"))
+                    imgURL = null;
+                break;
+            }
+            if (!onlyURL) {
+                //fetch last-updated
+                HEADResponse metaData = (HEADResponse) ConnectionFactory.doQuery(FLOCAL_HOST, imgURL, null, ProviderEnum.HEAD);
+                lastUpdated = metaData.metaData.getLastModified();
+            }
+            return new AvatarMetaData(imgURL, lastUpdated);
+        } catch (IOException e) {
+            throw new FLException("Failed to retrieve data", e.getMessage());
+        }
+    }
 
-	public static InputStream fetchAvatar(AvatarMetaData meta) throws IOException {
-		return fetchFile(meta.URL);
-	}
+    public static InputStream fetchAvatar(AvatarMetaData meta) throws IOException {
+        return fetchFile(meta.URL);
+    }
 
-	public static InputStream fetchFile(String URL) throws IOException {
-		BinaryResponse response = (BinaryResponse) ConnectionFactory.doQuery(FLOCAL_HOST, URL, null, ProviderEnum.BINARY);
-		return response.getStream();
-	}
+    public static InputStream fetchFile(String URL) throws IOException {
+        BinaryResponse response = (BinaryResponse) ConnectionFactory.doQuery(FLOCAL_HOST, URL, null, ProviderEnum.BINARY);
+        return response.getStream();
+    }
 }
