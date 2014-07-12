@@ -85,20 +85,31 @@ public class PostListActivity extends ForumActivity {
     }
 
     private final static int MENU_REPLY = 1;
+    private final static int MENU_EDIT = 2;
+    private final static int MENU_SHARE = 3;
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         menu.add(0, MENU_REPLY, 0, R.string.post_option_reply);
+        menu.add(0, MENU_EDIT, 1, R.string.post_option_edit);
+        menu.add(0, MENU_SHARE, 2, R.string.post_option_share);
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        if (item.getItemId() == MENU_REPLY){
-            AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-            Toast.makeText(this, "Not implemented yet", Toast.LENGTH_LONG).show();
-            //adapter.getItem(acmi.position).toString()
-            return true;
+        AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        //adapter.getItem(acmi.position).toString()
+        switch (item.getItemId()) {
+            case MENU_REPLY:
+                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_LONG).show();
+                return true;
+            case MENU_EDIT:
+                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_LONG).show();
+                return true;
+            case MENU_SHARE:
+                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_LONG).show();
+                return true;
         }
         return super.onContextItemSelected(item);
     }
