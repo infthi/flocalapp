@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Collections;
 import java.util.List;
@@ -73,7 +74,8 @@ public class BoardListActivity extends ForumActivity {
 			data = FLDataLoader.listBoards(SessionContainer.getSessionInstance());
 		} catch (FLException e) {
 			Log.e(FLDataLoader.FLOCAL_APP_SIGN, e.toString(), e);
-			data = Collections.emptyList();
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            data = Collections.emptyList();
 		}
 		final List<FLBoard> finalData = data;
 		runOnUiThread(new Runnable() {

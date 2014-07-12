@@ -443,12 +443,12 @@ public class FLDataLoader {
         for (Element link : elt.select("a")) {
             if (link.attr("href").startsWith("/")) {
                 link.attr("href", "http://" + FLOCAL_HOST + link.attr("href"));
-                List<Node> children = link.childNodes();
+/*                List<Node> children = link.childNodes();
                 if (children.size() == 1) {
                     Node possibleTextNode = children.get(0);
                     if (possibleTextNode instanceof TextNode)
                         ((TextNode) possibleTextNode).text("---");
-                }
+                }*/
             }
         }
         return elt.html();
