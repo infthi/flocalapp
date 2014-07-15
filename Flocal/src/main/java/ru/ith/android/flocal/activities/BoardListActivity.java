@@ -78,13 +78,14 @@ public class BoardListActivity extends ForumActivity {
             data = Collections.emptyList();
 		}
 		final List<FLBoard> finalData = data;
-		runOnUiThread(new Runnable() {
+        hideLoadingProgressBar();
+        runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				adapter.clear();
-				adapter.addAll(finalData);
-				adapter.notifyDataSetChanged();
-			}
+                adapter.clear();
+                adapter.addAll(finalData);
+                adapter.notifyDataSetChanged();
+            }
 		});
 
 	}

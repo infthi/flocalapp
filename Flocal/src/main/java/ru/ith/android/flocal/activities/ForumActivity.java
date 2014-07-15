@@ -26,18 +26,19 @@ import ru.ith.lib.flocal.FLException;
  */
 public abstract class ForumActivity extends Activity {
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		try {
-			if (SessionContainer.getInstance().isAnonymousSession())
-				menu.add(0,0,0, getString(R.string.login_menu));
-			else
-				menu.add(0,1,1, getString(R.string.logout_menu));
-		} catch (FLException e) {
-			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-			menu.add(0,1,1, e.getMessage()).setEnabled(false);
-		}
-		return super.onCreateOptionsMenu(menu);
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        try {
+            if (SessionContainer.getInstance().isAnonymousSession())
+                menu.add(0, 0, 0, getString(R.string.login_menu));
+            else
+                menu.add(0, 1, 1, getString(R.string.logout_menu));
+        } catch (FLException e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            menu.add(0, 1, 1, e.getMessage()).setEnabled(false);
+        }
+        return super.onCreateOptionsMenu(menu);
 	}
 
 	@Override
@@ -147,16 +148,17 @@ public abstract class ForumActivity extends Activity {
 		refreshTask.cancel();
 		try {
 			refreshImpl();
-		} finally {
-			makeRefreshTask(getRefreshPeriod());
-		}
-	}
-	private void makeRefreshTask(long offset){
-		refreshTask = new TimerTask() {
-			@Override
-			public void run() {
-				refresh();
-			};
+        } finally {
+            makeRefreshTask(getRefreshPeriod());
+        }
+    }
+
+    private void makeRefreshTask(long offset) {
+        refreshTask = new TimerTask() {
+            @Override
+            public void run() {
+                refresh();
+            };
 		};
 		refresher.schedule(refreshTask, offset);
 	}
@@ -185,5 +187,19 @@ public abstract class ForumActivity extends Activity {
         super.onPause();
         refreshTask.cancel();
         refresher.purge();
+    }
+
+    public void hideLoadingProgressBar() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                View progress = findViewById(R.id.firstLoadingProgressBar);
+                if (progress != null)
+                    progress.setVisibility(View.GONE);
+                View status = findViewById(R.id.firstLoadingStatus);
+                if (status != null)
+                    status.setVisibility(View.GONE);
+            }
+        });
     }
 }

@@ -1,6 +1,5 @@
 package ru.ith.android.flocal.engine;
 
-import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.text.Html;
@@ -34,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ru.ith.android.flocal.R;
+import ru.ith.android.flocal.activities.PostListActivity;
 import ru.ith.android.flocal.io.ImageFactory;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
@@ -48,11 +48,11 @@ import ru.ith.lib.flocal.data.FLThreadPageSet;
 public class PostListAdapter extends EndlessAdapter {
     private final FLThreadHeader thread;
     private final ArrayAdapter<FLMessageWrapper> data;
-    private final Activity ctxt;
+    private final PostListActivity ctxt;
     private final ListView target;
     private final static Executor ImageLoader = new ThreadPoolExecutor(3, 5, 5, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 
-    public PostListAdapter(FLThreadHeader thread, final Activity ctxt, final ListView target, final ImageFactory imageGetter, final Html.TagHandler tagHandler) {
+    public PostListAdapter(FLThreadHeader thread, final PostListActivity ctxt, final ListView target, final ImageFactory imageGetter, final Html.TagHandler tagHandler) {
         super(new ArrayAdapter<FLMessageWrapper>(ctxt, R.layout.thread_entry) {
             Map<Long, Reference<View>> cachedMessageViews = new HashMap<Long, Reference<View>>();
 
@@ -207,6 +207,7 @@ public class PostListAdapter extends EndlessAdapter {
             } else
                 lastLoadedPostKnownOffset -= 10;
         }
+        ctxt.dataLoaded();
         return gotPosts;
     }
 

@@ -1,12 +1,8 @@
 package ru.ith.android.flocal.engine;
 
-import android.app.Activity;
-import android.graphics.Color;
 import android.graphics.Typeface;
-import android.os.AsyncTask;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
-import android.text.style.UnderlineSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,11 +14,10 @@ import com.commonsware.cwac.endless.EndlessAdapter;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
-import java.util.Timer;
 import java.util.TimerTask;
-import java.util.TreeSet;
 
 import ru.ith.android.flocal.R;
+import ru.ith.android.flocal.activities.ThreadListActivity;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLBoard;
@@ -34,9 +29,9 @@ import ru.ith.lib.flocal.data.FLThreadHeader;
 public class ThreadListAdapter extends EndlessAdapter  {
     private final FLBoard board;
     private final ArrayAdapter<FLThreadHeader> data;
-    private Activity ctxt;
+    private ThreadListActivity ctxt;
 
-    public ThreadListAdapter(FLBoard board, final Activity ctxt) {
+    public ThreadListAdapter(FLBoard board, final ThreadListActivity ctxt) {
         super(new ArrayAdapter<FLThreadHeader>(ctxt, R.layout.thread_entry){
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
@@ -87,6 +82,7 @@ public class ThreadListAdapter extends EndlessAdapter  {
             }
             threads.clear();
         }
+        ctxt.hideLoadingProgressBar();
     }
 
     @Override

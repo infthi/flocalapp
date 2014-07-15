@@ -18,4 +18,21 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:choiceMode="singleChoice" />
+
+    <ProgressBar
+        android:id="@+id/firstLoadingProgressBar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true" />
+
+    <TextView
+        android:id="@+id/firstLoadingStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/firstLoadingProgressBar"
+        android:layout_centerHorizontal="true"
+        android:text="Loading..."
+        android:textColor="@android:color/secondary_text_dark" />
 </RelativeLayout>

@@ -63,14 +63,14 @@ public class PostListActivity extends ForumActivity {
                     }
                 }
             });
-        postList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View sender, int position, long id) {
-                registerForContextMenu(sender);
-                openContextMenu(sender);
-                unregisterForContextMenu(sender);
-            }
-        });
+//        postList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View sender, int position, long id) {
+//                registerForContextMenu(sender);
+//                openContextMenu(sender);
+//                unregisterForContextMenu(sender);
+//            }
+//        });
         registerForContextMenu(postList);
     }
 
@@ -112,5 +112,9 @@ public class PostListActivity extends ForumActivity {
                 return true;
         }
         return super.onContextItemSelected(item);
+    }
+
+    public void dataLoaded() {
+        hideLoadingProgressBar();
     }
 }
