@@ -345,14 +345,14 @@ public class FLDataLoader {
             FLThreadPageSet header = parseHeader(mainPage);
 
 
-            for (Element mesageHeaderElement : mainPage
+            for (Element messageHeaderElement : mainPage
                     .getAll("td.subjecttable:not([style])")) {
                 String userName, caption, postDate;
                 int rating = 0;
                 long messageID;
                 StringBuilder postHtml = new StringBuilder();
 
-                Node linkNode = mesageHeaderElement.childNode(0);
+                Node linkNode = messageHeaderElement.childNode(0);
                 if (linkNode.nodeName().equalsIgnoreCase("a")) {
                     messageID = Long.valueOf(linkNode.attr("name").substring(4));
                 } else
@@ -392,7 +392,7 @@ public class FLDataLoader {
                 } else
                     continue;
 
-                Element ratingNodeContainer = mesageHeaderElement
+                Element ratingNodeContainer = messageHeaderElement
                         .nextElementSibling();
                 if (ratingNodeContainer.childNodeSize() > 0) {
                     Node ratingNodeSpan = ratingNodeContainer.childNode(0);
@@ -409,7 +409,7 @@ public class FLDataLoader {
                 } else
                     continue;
 
-                Element textContainer = mesageHeaderElement.parent()
+                Element textContainer = messageHeaderElement.parent()
                         .nextElementSibling();
                 if (textContainer.children().size() > 0) {
                     Element textElement = textContainer.child(0);

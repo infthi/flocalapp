@@ -22,9 +22,9 @@ public class WebResponseMetadata {
 	private String redirect = null;
 	private Map<String, String> cookies = new TreeMap<String, String>();
 	private static final SimpleDateFormat LAST_MODIFIED_FORMAT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-	private long mContentLength = 0;
+    private long mContentLength = -1;
 
-	public void processHeader(String header) throws IOException{
+    public void processHeader(String header) throws IOException{
 		if (headerCount++==0){
 			processHTTPHeader(header);
 			return;
