@@ -72,13 +72,18 @@ public class BoardListActivity extends ForumActivity {
 		List<FLBoard> data;
 		try {
 			data = FLDataLoader.listBoards(SessionContainer.getSessionInstance());
-		} catch (FLException e) {
-			Log.e(FLDataLoader.FLOCAL_APP_SIGN, e.toString(), e);
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            hideLoadingProgressBar();
+        } catch (final FLException e) {
+            Log.e(FLDataLoader.FLOCAL_APP_SIGN, e.toString(), e);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(BoardListActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
             data = Collections.emptyList();
 		}
 		final List<FLBoard> finalData = data;
-        hideLoadingProgressBar();
         runOnUiThread(new Runnable() {
 			@Override
 			public void run() {

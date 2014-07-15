@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Timer;
@@ -147,7 +148,17 @@ public abstract class ForumActivity extends Activity {
 	protected final void refresh(){
 		refreshTask.cancel();
 		try {
-			refreshImpl();
+            refreshImpl();
+        } catch (final RuntimeException e) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    e.printStackTrace();
+                    View status = findViewById(R.id.firstLoadingStatus);
+                    if (status != null)
+                        ((TextView) status).setText(e.getMessage());
+                }
+            });
         } finally {
             makeRefreshTask(getRefreshPeriod());
         }
