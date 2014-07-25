@@ -9,6 +9,7 @@ import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ImageSpan;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -378,8 +379,13 @@ class ImageLoadTask extends AsyncTask<Void, updateHTMLPack, Void> {
         for (final ImageSpan img : htmlSpannable.getSpans(0,
                 htmlSpannable.length(), ImageSpan.class)) {
             Drawable d = getImageFile(img.getSource());
-            d.setBounds(0, 0, (int) (d.getIntrinsicWidth() * mFactory.dpK * 1.5), (int) (d.getIntrinsicHeight() * mFactory.dpK * 1.5));
-            publishProgress(new updateHTMLPack(img, d));
+            if (d == null) {
+                Log.d(FLDataLoader.FLOCAL_APP_SIGN, "Failed to load [" + img.getSource() + "]; null");
+                //TODO: Load some kinf of "failed to load" image here
+            } else {
+                d.setBounds(0, 0, (int) (d.getIntrinsicWidth() * mFactory.dpK * 1.5), (int) (d.getIntrinsicHeight() * mFactory.dpK * 1.5));
+                publishProgress(new updateHTMLPack(img, d));
+            }
         }
         return null;
     }
