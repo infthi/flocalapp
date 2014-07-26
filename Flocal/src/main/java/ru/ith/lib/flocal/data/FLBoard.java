@@ -11,12 +11,19 @@ public class FLBoard {
 		boardName = name;
 		boardURIName = uRIName;
 		hasUnreadPosts = hasUnread;
-        this.src = src;
-	}
-	
-	@Override
-	public String toString() {
-		return (hasUnreadPosts?"(*)":"")+boardName+" [@"+boardURIName+"]";
-	}
+        this.src = (src == null ? "" : src);
+    }
 
+    @Override
+	public String toString() {
+        return boardName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof FLBoard))
+            return false;
+        FLBoard bo = (FLBoard) o;
+        return (src.equals(bo.src) && boardURIName.equals(bo.boardURIName));
+    }
 }

@@ -1,6 +1,5 @@
 package ru.ith.android.flocal.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -36,14 +35,10 @@ public class BoardListActivity extends ForumActivity {
 			@Override
 			public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 				FLBoard selectedBoard = (FLBoard) adapterView.getItemAtPosition(i);
-				Intent intent = new Intent(BoardListActivity.this, ThreadListActivity.class);
-				intent.putExtra(ThreadListActivity.KEY_BOARD, selectedBoard.boardURIName);
-				intent.putExtra(ThreadListActivity.KEY_BOARD_NAME, selectedBoard.boardName);
-				intent.putExtra(ThreadListActivity.KEY_BOARD_SRC, selectedBoard.src);
-				startActivity(intent);
-			}
-		});
-		adapter = new ArrayAdapter<FLBoard>(this, R.layout.board_entry){
+                ThreadListActivity.open(BoardListActivity.this, selectedBoard);
+            }
+        });
+        adapter = new ArrayAdapter<FLBoard>(this, R.layout.board_entry){
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
 				View row = convertView;

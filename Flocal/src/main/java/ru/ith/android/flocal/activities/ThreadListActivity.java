@@ -1,10 +1,15 @@
 package ru.ith.android.flocal.activities;
 
+import android.app.ActionBar;
+import android.app.Activity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.SpinnerAdapter;
 
 import java.util.LinkedList;
 
@@ -35,7 +40,12 @@ public class ThreadListActivity extends ForumActivity {
         String boardSrc = intent.getStringExtra(KEY_BOARD_SRC);
         //TODO: fetch board name from fetched thread list, since it may not be set in the intent
         board = new FLBoard(boardName, boardURI, false, boardSrc);
-        setTitle(boardName);
+
+        {
+            setTitle(boardName);
+            new AllBoardListLoader(board).execute();
+        }
+
         ListView threadList = (ListView) findViewById(R.id.threadListView);
         adapter = new ThreadListAdapter(board, this);
         threadList.setAdapter(adapter);
@@ -70,4 +80,71 @@ public class ThreadListActivity extends ForumActivity {
         return 10000;
     }
 
+    class AllBoardListLoader extends AsyncTask<Void, Void, FLBoard[]> {
+        private final FLBoard currentBoard;
+        int selectedItem = 0;
+
+        AllBoardListLoader(FLBoard currentBoard) {
+            this.currentBoard = currentBoard;
+        }
+
+        @Override
+        protected FLBoard[] doInBackground(Void... params) {
+            FLBoard[] result = new FLBoard[0];
+            try {
+                //TODO: cache such request. Also provide _entire_ board list, not just visible ones
+                result = FLDataLoader.listBoards(SessionContainer.getSessionInstance()).toArray(result);
+            } catch (FLException e) {
+                return null;
+            }
+            for (FLBoard board : result) {
+                if (board.equals(currentBoard)) {
+                    break;
+                }
+                selectedItem++;
+            }
+            if (selectedItem == result.length)
+                selectedItem = 0;
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(final FLBoard[] flBoards) {
+            super.onPostExecute(flBoards);
+            if (flBoards == null)
+                return; //Failed to load boards list. Possibly notify user?
+            ActionBar actions = getActionBar();
+            //setting actionbar board selection
+            SpinnerAdapter adapter = new ArrayAdapter(actions.getThemedContext(), android.R.layout.simple_spinner_dropdown_item, flBoards);
+            ActionBar.OnNavigationListener callback = new ActionBar.OnNavigationListener() {
+                @Override
+                public boolean onNavigationItemSelected(int position, final long id) {
+                    final FLBoard toOpen = flBoards[(int) id];
+                    if (toOpen.equals(currentBoard))
+                        return false;
+                    ThreadListActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ThreadListActivity.open(ThreadListActivity.this, toOpen);
+                        }
+                    });
+                    return true;
+                }
+            };
+
+            actions.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+            actions.setDisplayShowTitleEnabled(false);
+            actions.setListNavigationCallbacks(adapter, callback);
+
+            actions.setSelectedNavigationItem(selectedItem);
+        }
+    }
+
+    public static void open(Activity context, FLBoard flBoard) {
+        Intent intent = new Intent(context, ThreadListActivity.class);
+        intent.putExtra(ThreadListActivity.KEY_BOARD, flBoard.boardURIName);
+        intent.putExtra(ThreadListActivity.KEY_BOARD_NAME, flBoard.boardName);
+        intent.putExtra(ThreadListActivity.KEY_BOARD_SRC, flBoard.src);
+        context.startActivity(intent);
+    }
 }
