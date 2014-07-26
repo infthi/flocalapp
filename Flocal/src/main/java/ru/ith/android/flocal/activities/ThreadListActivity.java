@@ -103,8 +103,14 @@ public class ThreadListActivity extends ForumActivity {
                 }
                 selectedItem++;
             }
-            if (selectedItem == result.length)
-                selectedItem = 0;
+            if (selectedItem == result.length) {
+                //Current board was not found in (possibly filtered) list of boards.
+                //Let's add it as the last item.
+                FLBoard[] extendedResult = new FLBoard[result.length + 1];
+                System.arraycopy(result, 0, extendedResult, 0, result.length);
+                extendedResult[result.length] = currentBoard;
+                result = extendedResult;
+            }
             return result;
         }
 
