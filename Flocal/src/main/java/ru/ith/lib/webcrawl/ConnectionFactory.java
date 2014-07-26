@@ -20,8 +20,10 @@ public class ConnectionFactory {
         String socketKey = host + ":" + 80;
         Socket result;
         if ((result = keepAliveSockets.remove(socketKey)) != null) {
-            Log.d(FLDataLoader.FLOCAL_APP_SIGN, "reusing socket :) " + url);
-            return result;
+            if (!result.isClosed()) {
+                Log.d(FLDataLoader.FLOCAL_APP_SIGN, "reusing socket :) " + url);
+                return result;
+            }
         }
         Log.d(FLDataLoader.FLOCAL_APP_SIGN, "created new socket :( " + url);
         return new Socket(host, 80);
