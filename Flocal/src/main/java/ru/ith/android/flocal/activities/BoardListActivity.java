@@ -63,13 +63,8 @@ public class BoardListActivity extends ForumActivity {
     }
 
 	@Override
-	protected long getStartRefreshPeriod() {
-		return 0;
-	}
-
-	@Override
-	void refreshImpl() {
-		List<FLBoard> data;
+    void refresh() {
+        List<FLBoard> data;
 		try {
 			data = FLDataLoader.listBoards(SessionContainer.getSessionInstance());
             hideLoadingProgressBar();

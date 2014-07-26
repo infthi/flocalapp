@@ -40,115 +40,116 @@ public abstract class ForumActivity extends Activity {
             menu.add(0, 1, 1, e.getMessage()).setEnabled(false);
         }
         return super.onCreateOptionsMenu(menu);
-	}
+    }
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getGroupId()==0){
-			switch (item.getItemId()){
-				case 0:
-					doLogin();
-					return true;
-				case 1:
-					doLogout();
-					return true;
-			}
-		}
-		return super.onOptionsItemSelected(item);
-	}
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getGroupId() == 0) {
+            switch (item.getItemId()) {
+                case 0:
+                    doLogin();
+                    return true;
+                case 1:
+                    doLogout();
+                    return true;
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
-	private void doLogin() {
-		final Dialog loginDialog = new Dialog(this);
-		loginDialog.setContentView(R.layout.login_dialog);
-		loginDialog.setTitle(getString(R.string.login_dialog_title));
+    private void doLogin() {
+        final Dialog loginDialog = new Dialog(this);
+        loginDialog.setContentView(R.layout.login_dialog);
+        loginDialog.setTitle(getString(R.string.login_dialog_title));
 
-		((Button)loginDialog.findViewById(R.id.cancelButton)).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						loginDialog.dismiss();
-					}
-				});
-			}
-		});
+        ((Button) loginDialog.findViewById(R.id.cancelButton)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        loginDialog.dismiss();
+                    }
+                });
+            }
+        });
 
-		final EditText loginText = (EditText) loginDialog.findViewById(R.id.loginField);
-		final EditText passText = (EditText) loginDialog.findViewById(R.id.passField);
+        final EditText loginText = (EditText) loginDialog.findViewById(R.id.loginField);
+        final EditText passText = (EditText) loginDialog.findViewById(R.id.passField);
 
-		((Button) loginDialog.findViewById(R.id.OKButton)).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				final ProgressDialog progress = new ProgressDialog(loginDialog.getContext());
-				progress.setMessage(getString(R.string.login_dialog_loginning));
-				progress.setCancelable(false);
-				progress.show();
+        ((Button) loginDialog.findViewById(R.id.OKButton)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final ProgressDialog progress = new ProgressDialog(loginDialog.getContext());
+                progress.setMessage(getString(R.string.login_dialog_loginning));
+                progress.setCancelable(false);
+                progress.show();
 
-				new AsyncTask<String, String, Boolean>(){
-					String errorString = null;
+                new AsyncTask<String, String, Boolean>() {
+                    String errorString = null;
 
-					@Override
-					protected Boolean doInBackground(String... params) {
-						try {
-							SessionContainer.getInstance().login(params[0], params[1]);
-							return Boolean.TRUE;
-						} catch (FLException e) {
-							errorString = e.getMessage();
-							return Boolean.FALSE;
-						} finally {
-							refresh();
-						}
-					}
+                    @Override
+                    protected Boolean doInBackground(String... params) {
+                        try {
+                            SessionContainer.getInstance().login(params[0], params[1]);
+                            return Boolean.TRUE;
+                        } catch (FLException e) {
+                            errorString = e.getMessage();
+                            return Boolean.FALSE;
+                        } finally {
+                            refreshWrap();
+                        }
+                    }
 
-					@Override
-					protected void onPostExecute(final Boolean success) {
-						super.onPostExecute(success);
-						progress.dismiss();
-						if (success) {
-							loginDialog.dismiss();
-							invalidateOptionsMenu();
-						} else
-							Toast.makeText(loginDialog.getContext(), errorString, Toast.LENGTH_LONG).show();
-					}
-				}.execute(loginText.getText().toString(), passText.getText().toString());
-			}
-		});
+                    @Override
+                    protected void onPostExecute(final Boolean success) {
+                        super.onPostExecute(success);
+                        progress.dismiss();
+                        if (success) {
+                            loginDialog.dismiss();
+                            invalidateOptionsMenu();
+                        } else
+                            Toast.makeText(loginDialog.getContext(), errorString, Toast.LENGTH_LONG).show();
+                    }
+                }.execute(loginText.getText().toString(), passText.getText().toString());
+            }
+        });
 
-		loginDialog.show();
-	}
+        loginDialog.show();
+    }
 
-	private void doLogout() {
-		final ProgressDialog progress = new ProgressDialog(this);
-		progress.setMessage(getString(R.string.login_dialog_logging_out));
-		progress.setCancelable(false);
-		progress.show();
+    private void doLogout() {
+        final ProgressDialog progress = new ProgressDialog(this);
+        progress.setMessage(getString(R.string.login_dialog_logging_out));
+        progress.setCancelable(false);
+        progress.show();
 
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					SessionContainer.getInstance().logout();
-				} catch (FLException e) {
-					Log.wtf(FLDataLoader.FLOCAL_APP_SIGN, e.toString());
-				} finally {
-					refresh();
-					runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							invalidateOptionsMenu();
-							progress.dismiss();
-						}
-					});
-				}
-			}
-		}).start();
-	}
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    SessionContainer.getInstance().logout();
+                } catch (FLException e) {
+                    Log.wtf(FLDataLoader.FLOCAL_APP_SIGN, e.toString());
+                } finally {
+                    refreshWrap();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            invalidateOptionsMenu();
+                            progress.dismiss();
+                        }
+                    });
+                }
+            }
+        }).start();
+    }
 
-	protected final void refresh(){
-		refreshTask.cancel();
-		try {
-            refreshImpl();
+    protected final void refreshWrap() {
+        if (refreshTask != null)
+            refreshTask.cancel();
+        try {
+            refresh();
         } catch (final RuntimeException e) {
             runOnUiThread(new Runnable() {
                 @Override
@@ -157,6 +158,7 @@ public abstract class ForumActivity extends Activity {
                     View status = findViewById(R.id.firstLoadingStatus);
                     if (status != null)
                         ((TextView) status).setText(e.getMessage());
+                    Toast.makeText(ForumActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         } finally {
@@ -164,23 +166,19 @@ public abstract class ForumActivity extends Activity {
         }
     }
 
-    private void makeRefreshTask(long offset) {
+    private void makeRefreshTask(long timeOut) {
         refreshTask = new TimerTask() {
             @Override
             public void run() {
-                refresh();
-            };
-		};
-		refresher.schedule(refreshTask, offset);
-	}
+                refreshWrap();
+            }
+        };
+        refresher.schedule(refreshTask, timeOut);
+    }
 
-	abstract void refreshImpl();
+    abstract void refresh();
 
     abstract long getRefreshPeriod();
-
-	protected long getStartRefreshPeriod(){
-		return getRefreshPeriod();
-	}
 
     private Timer refresher = null;
     private TimerTask refreshTask = null;
@@ -190,7 +188,7 @@ public abstract class ForumActivity extends Activity {
         super.onResume();
         MessageProcessor.instance.setContext(this);
         refresher = new Timer("Thread_list_refresher", true);
-		makeRefreshTask(getStartRefreshPeriod());
+        makeRefreshTask(0);
     }
 
     @Override
@@ -200,7 +198,7 @@ public abstract class ForumActivity extends Activity {
         refresher.purge();
     }
 
-    public void hideLoadingProgressBar() {
+    public final void hideLoadingProgressBar() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

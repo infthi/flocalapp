@@ -55,7 +55,7 @@ public class ThreadListActivity extends ForumActivity {
     }
 
     @Override
-    void refreshImpl() {
+    void refresh() {
         LinkedList<FLThreadHeader> firstPage = null;
         try {
             firstPage = FLDataLoader.listThreads(SessionContainer.getSessionInstance(), board, 0);
