@@ -69,7 +69,7 @@ public class PostListAdapter extends EndlessAdapter {
                 if (result == null) {
                     result = ctxt.getLayoutInflater().inflate(R.layout.post_entry, null, false);
 
-                    TextView postBodyView = ((TextView) result.findViewById(R.id.postEntryText));
+                    final TextView postBodyView = ((TextView) result.findViewById(R.id.postEntryText));
                     SpannableStringBuilder htmlSpannable = null;
                     Spanned spanned = Html.fromHtml(item.message.getPostData());
                     if (spanned instanceof SpannableStringBuilder) {
@@ -81,6 +81,27 @@ public class PostListAdapter extends EndlessAdapter {
 
                     postBodyView.setText(htmlSpannable);
                     postBodyView.setMovementMethod(LinkMovementMethod.getInstance());
+
+                    final View showMore = result.findViewById(R.id.postEntryShowMore);
+                    showMore.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            postBodyView.setMaxLines(Integer.MAX_VALUE);
+                            showMore.setVisibility(View.GONE);
+                        }
+                    });
+                    postBodyView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                        @Override
+                        public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                            TextView tv = (TextView) v;
+                            if (tv.getLineCount() <= 50) {
+                                showMore.setVisibility(View.GONE);
+                            } else {
+                                tv.setMaxLines(50);
+                            }
+
+                        }
+                    });
 
                     ((TextView) result.findViewById(R.id.postEntryAuthor)).setText(item.message.getAuthor());
                     ((TextView) result.findViewById(R.id.postEntryDate)).setText(item.message.getDate());

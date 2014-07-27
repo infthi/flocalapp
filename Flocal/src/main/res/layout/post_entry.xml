@@ -3,60 +3,114 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:background="@drawable/card">
-
-        <ImageView
-            android:id="@id/postEntryAvatar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal|top"
-            android:maxHeight="80dp"
-            android:maxWidth="80dp"
-            android:minWidth="80dp"
-            android:src="@drawable/ic_launcher"
-            android:layout_marginRight="10dp" />
+        android:orientation="vertical">
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal|top"
-            android:orientation="vertical">
+            android:layout_height="fill_parent"
+            android:background="@drawable/card">
 
-            <RelativeLayout
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent">
-
-                <TextView
-                    android:id="@id/postEntryAuthor"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_gravity="left|center_vertical"
-                    android:text="%author%"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@id/postEntryDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:text="%date%"
-                    android:textColor="@android:color/secondary_text_dark" />
-
-            </RelativeLayout>
-
-            <TextView
-                android:id="@id/postEntryText"
+            <ImageView
+                android:id="@id/postEntryAvatar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="%message%"
-                android:textIsSelectable="true" />
+                android:layout_gravity="center_horizontal|top"
+                android:layout_marginRight="10dp"
+                android:maxHeight="80dp"
+                android:maxWidth="80dp"
+                android:minWidth="80dp"
+                android:src="@drawable/ic_launcher" />
 
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|top"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+
+                    <TextView
+                        android:id="@id/postEntryAuthor"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_gravity="left|center_vertical"
+                        android:text="%author%"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@id/postEntryDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:text="%date%"
+                        android:textColor="@android:color/secondary_text_dark" />
+
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@id/postEntryText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="%message%"
+                    android:textIsSelectable="true" />
+
+                <LinearLayout
+                    android:id="@+id/postEntryShowMore"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent"
+                    android:layout_gravity="right"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:text="Show more" />
+
+                    <ImageView
+                        android:id="@+id/imageView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@android:drawable/ic_menu_more" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/PostEntryReply"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:gravity="fill_horizontal"
+            android:orientation="horizontal"
+            android:weightSum="1"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/PostEntryReplyText"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="textMultiLine"
+                android:enabled="true"
+                android:editable="true" />
+
+            <ImageButton
+                android:id="@+id/PostEntryReplyButton"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@android:drawable/ic_menu_send" />
         </LinearLayout>
 
     </LinearLayout>

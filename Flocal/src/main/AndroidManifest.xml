@@ -29,7 +29,8 @@
             android:label="@string/title_activity_thread_list"></activity>
         <activity
             android:name=".activities.PostListActivity"
-            android:label="@string/title_activity_post_list_adapter"></activity>
+            android:label="@string/title_activity_post_list_adapter"
+            android:windowSoftInputMode="adjustPan"></activity>
         <activity
             android:name=".activities.UploadActivity"
             android:label="@string/title_activity_upload">
