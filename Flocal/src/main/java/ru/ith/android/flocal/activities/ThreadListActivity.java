@@ -16,6 +16,8 @@ import java.util.LinkedList;
 import ru.ith.android.flocal.R;
 import ru.ith.android.flocal.engine.SessionContainer;
 import ru.ith.android.flocal.engine.ThreadListAdapter;
+import ru.ith.android.flocal.util.ForumDataAccessHelper;
+import ru.ith.android.flocal.util.Settings;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLBoard;
@@ -93,7 +95,7 @@ public class ThreadListActivity extends ForumActivity {
             FLBoard[] result = new FLBoard[0];
             try {
                 //TODO: cache such request. Also provide _entire_ board list, not just visible ones
-                result = FLDataLoader.listBoards(SessionContainer.getSessionInstance()).toArray(result);
+                result = ForumDataAccessHelper.getBoardList(Settings.instance.getSpinnerBoardListType()).toArray(result);
             } catch (FLException e) {
                 return null;
             }

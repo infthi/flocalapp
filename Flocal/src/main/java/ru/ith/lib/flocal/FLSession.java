@@ -15,10 +15,14 @@ public class FLSession {
 		this(FLDataLoader.generateLoginData(login, password));
 	}
 
-	public FLSession(String sKey) throws FLException {
-		Map<String, String> cookies = new TreeMap<String, String>();
-		if (sKey != null) {
-			String[] cookieData = sKey.split(":");
+    public FLSession() {
+        this.sessionCookies = Collections.emptyMap();
+    }
+
+    public FLSession(String sKey) {
+        Map<String, String> cookies = new TreeMap<String, String>();
+        if (sKey != null) {
+            String[] cookieData = sKey.split(":");
 			cookies.put("w3t_w3t_key", cookieData[0]);
 			cookies.put("w3t_w3t_mysess", cookieData[1]);
 			cookies.put("w3t_w3t_myid", cookieData[2]);

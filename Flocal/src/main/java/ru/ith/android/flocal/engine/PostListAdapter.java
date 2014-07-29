@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ru.ith.android.flocal.R;
+import ru.ith.android.flocal.util.Settings;
 import ru.ith.android.flocal.activities.PostListActivity;
 import ru.ith.android.flocal.io.ImageFactory;
 import ru.ith.lib.flocal.FLDataLoader;
@@ -94,10 +95,10 @@ public class PostListAdapter extends EndlessAdapter {
                         @Override
                         public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
                             TextView tv = (TextView) v;
-                            if (tv.getLineCount() <= 50) {
+                            if (tv.getLineCount() <= Settings.instance.getPostCutLimit()) {
                                 showMore.setVisibility(View.GONE);
                             } else {
-                                tv.setMaxLines(50);
+                                tv.setMaxLines(Settings.instance.getPostCutLimit());
                             }
 
                         }

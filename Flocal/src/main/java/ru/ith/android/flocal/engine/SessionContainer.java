@@ -1,9 +1,6 @@
 package ru.ith.android.flocal.engine;
 
 import android.content.SharedPreferences;
-import android.text.Editable;
-
-import java.util.prefs.Preferences;
 
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
@@ -17,12 +14,13 @@ public class SessionContainer {
 
 	private static final Object lock = new Object();
 	private static SessionContainer instance = null;
-	private FLSession session;
-	private static SharedPreferences preferences;
+    private FLSession session;
+    private static FLSession anonymousSession = new FLSession();
+    private static SharedPreferences preferences;
 
-	private SessionContainer() throws FLException {
-		String key = null;
-		if (preferences!=null)
+    private SessionContainer() throws FLException {
+        String key = null;
+        if (preferences!=null)
 			key = preferences.getString(SESSION_STORE_KEY, null);
 		this.session = new FLSession(key);
 	}
@@ -46,15 +44,19 @@ public class SessionContainer {
         return getInstance().getSession();
     }
 
-	public synchronized FLSession getSession() {
-		return session;
-	}
+    public static FLSession getAnonymousSessionInstance() throws FLException {
+        return anonymousSession;
+    }
 
-	public boolean isAnonymousSession() {
-		return session.isAnonymous();
-	}
+    public synchronized FLSession getSession() {
+        return session;
+    }
 
-	public void login(String user, String pass) throws FLException {
+    public boolean isAnonymousSession() {
+        return session.isAnonymous();
+    }
+
+    public void login(String user, String pass) throws FLException {
 		logout();
 		setSession(new FLSession(user, pass));
 	}
