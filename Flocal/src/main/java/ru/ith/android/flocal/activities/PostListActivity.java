@@ -14,6 +14,7 @@ import ru.ith.android.flocal.engine.PostListAdapter;
 import ru.ith.android.flocal.io.ImageFactory;
 import ru.ith.android.flocal.views.OverscrollableList;
 import ru.ith.android.flocal.views.overScrollListener;
+import ru.ith.lib.flocal.data.FLMessage;
 import ru.ith.lib.flocal.data.FLThreadHeader;
 
 public class PostListActivity extends ForumActivity {
@@ -63,6 +64,14 @@ public class PostListActivity extends ForumActivity {
                     }
                 }
             });
+        postList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                final FLMessage msg = adapter.getMessage(position);
+                return true;
+            }
+        });
 //        postList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 //            @Override
 //            public void onItemClick(AdapterView<?> parent, View sender, int position, long id) {
@@ -87,10 +96,12 @@ public class PostListActivity extends ForumActivity {
     private final static int MENU_REPLY = 1;
     private final static int MENU_EDIT = 2;
     private final static int MENU_SHARE = 3;
+    private final static int MENU_MINIMIZE_POST = 4;
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
+
         menu.add(0, MENU_REPLY, 0, R.string.post_option_reply);
         menu.add(0, MENU_EDIT, 1, R.string.post_option_edit);
         menu.add(0, MENU_SHARE, 2, R.string.post_option_share);

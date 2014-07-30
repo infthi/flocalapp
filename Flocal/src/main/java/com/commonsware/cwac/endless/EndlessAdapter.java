@@ -27,6 +27,8 @@ import android.widget.ListAdapter;
 import java.util.concurrent.atomic.AtomicBoolean;
 import com.commonsware.cwac.adapter.AdapterWrapper;
 
+import ru.ith.lib.flocal.data.FLMessage;
+
 /**
  * Adapter that assists another adapter in appearing
  * endless. For example, this could be used for an adapter
@@ -305,6 +307,8 @@ abstract public class EndlessAdapter extends AdapterWrapper {
             notifyDataSetChanged();
         }
     }
+
+    public abstract FLMessage getMessage(int position);
 
     /**
      * A background task that will be run when there is a need

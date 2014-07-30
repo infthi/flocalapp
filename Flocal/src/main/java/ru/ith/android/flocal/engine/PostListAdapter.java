@@ -34,9 +34,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ru.ith.android.flocal.R;
-import ru.ith.android.flocal.util.Settings;
 import ru.ith.android.flocal.activities.PostListActivity;
 import ru.ith.android.flocal.io.ImageFactory;
+import ru.ith.android.flocal.util.Settings;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLMessage;
@@ -84,25 +84,7 @@ public class PostListAdapter extends EndlessAdapter {
                     postBodyView.setMovementMethod(LinkMovementMethod.getInstance());
 
                     final View showMore = result.findViewById(R.id.postEntryShowMore);
-                    showMore.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            postBodyView.setMaxLines(Integer.MAX_VALUE);
-                            showMore.setVisibility(View.GONE);
-                        }
-                    });
-                    postBodyView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-                        @Override
-                        public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                            TextView tv = (TextView) v;
-                            if (tv.getLineCount() <= Settings.instance.getPostCutLimit()) {
-                                showMore.setVisibility(View.GONE);
-                            } else {
-                                tv.setMaxLines(Settings.instance.getPostCutLimit());
-                            }
-
-                        }
-                    });
+                    addCutCapatibility(postBodyView, showMore);
 
                     ((TextView) result.findViewById(R.id.postEntryAuthor)).setText(item.message.getAuthor());
                     ((TextView) result.findViewById(R.id.postEntryDate)).setText(item.message.getDate());
@@ -118,6 +100,32 @@ public class PostListAdapter extends EndlessAdapter {
         this.thread = thread;
         this.firstKnownPost = thread.getUnreadID();
         data = (ArrayAdapter) getWrappedAdapter();
+    }
+
+    private static void addCutCapatibility(final TextView postBodyView, final View showMorePanel) {
+        showMorePanel.setVisibility(View.GONE);
+        final View.OnLayoutChangeListener listener = new View.OnLayoutChangeListener() {
+            //if text is too long we do cut it and show a 'show more' panel
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                TextView tv = (TextView) v;
+                if (tv.getLineCount() > Settings.instance.getPostCutLimit()) {
+                    tv.setMaxLines(Settings.instance.getPostCutLimit());
+                    showMorePanel.setVisibility(View.VISIBLE);
+                    postBodyView.invalidate();
+                }
+            }
+        };
+
+        showMorePanel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                postBodyView.setMaxLines(Integer.MAX_VALUE);
+                showMorePanel.setVisibility(View.GONE);
+                postBodyView.removeOnLayoutChangeListener(listener);
+            }
+        });
+        postBodyView.addOnLayoutChangeListener(listener);
     }
 
     private long firstKnownPost = -1l, lastKnownPost = -1l;
@@ -274,6 +282,14 @@ public class PostListAdapter extends EndlessAdapter {
             }
             newPosts.clear();
         }
+    }
+
+    @Override
+    public FLMessage getMessage(int position) {
+        FLMessageWrapper wrap = (FLMessageWrapper) getItem(position);
+        if ((wrap == null) || (wrap.isLoadingStub))
+            return null;
+        return wrap.message;
     }
 
     @Override

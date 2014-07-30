@@ -21,34 +21,34 @@ import ru.ith.android.flocal.activities.ThreadListActivity;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLBoard;
+import ru.ith.lib.flocal.data.FLMessage;
 import ru.ith.lib.flocal.data.FLThreadHeader;
 
 /**
  * Created by infthi on 6/25/13.
  */
-public class ThreadListAdapter extends EndlessAdapter  {
+public class ThreadListAdapter extends EndlessAdapter {
     private final FLBoard board;
     private final ArrayAdapter<FLThreadHeader> data;
     private ThreadListActivity ctxt;
 
     public ThreadListAdapter(FLBoard board, final ThreadListActivity ctxt) {
-        super(new ArrayAdapter<FLThreadHeader>(ctxt, R.layout.thread_entry){
+        super(new ArrayAdapter<FLThreadHeader>(ctxt, R.layout.thread_entry) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View row = convertView;
-                if(row == null)
-                {
+                if (row == null) {
                     LayoutInflater inflater = ctxt.getLayoutInflater();
                     row = inflater.inflate(R.layout.thread_entry, parent, false);
                 }
                 FLThreadHeader item = getItem(position);
                 CharSequence threadText = item.getName();
-				if (item.getUnreadID()>=0){
+                if (item.getUnreadID() >= 0) {
                     SpannableString spanString = new SpannableString(threadText);
                     spanString.setSpan(new StyleSpan(Typeface.BOLD), 0, spanString.length(), 0);
                     threadText = spanString;
                 }
-                ((TextView)row.findViewById(R.id.threadEntryText)).setText(threadText);
+                ((TextView) row.findViewById(R.id.threadEntryText)).setText(threadText);
                 return row;
 
             }
@@ -63,10 +63,11 @@ public class ThreadListAdapter extends EndlessAdapter  {
     int currentPage = 0;
 
     private LinkedList<FLThreadHeader> threads = new LinkedList<FLThreadHeader>();
+
     @Override
     protected boolean cacheInBackground() throws Exception {
         LinkedList<FLThreadHeader> nextPage = FLDataLoader.listThreads(SessionContainer.getSessionInstance(), board, currentPage++);
-        synchronized (threads){
+        synchronized (threads) {
             threads.addAll(nextPage);
         }
         return !nextPage.isEmpty();
@@ -74,15 +75,23 @@ public class ThreadListAdapter extends EndlessAdapter  {
 
     @Override
     protected void appendCachedData() {
-        synchronized (threads){
-            for (FLThreadHeader thread: threads){
-                if (knownThreads.add(thread)){
+        synchronized (threads) {
+            for (FLThreadHeader thread : threads) {
+                if (knownThreads.add(thread)) {
                     data.add(thread);
                 }
             }
             threads.clear();
         }
         ctxt.hideLoadingProgressBar();
+    }
+
+    @Override
+    public FLMessage getMessage(int position) {
+        FLMessageWrapper wrap = (FLMessageWrapper) getItem(position);
+        if ((wrap == null) || wrap.isLoadingStub)
+            return null;
+        return wrap.message;
     }
 
     @Override
@@ -97,7 +106,7 @@ public class ThreadListAdapter extends EndlessAdapter  {
             @Override
             public void run() {
                 int counter = 0;
-                for (FLThreadHeader thread: firstPage){
+                for (FLThreadHeader thread : firstPage) {
                     if (knownThreads.remove(thread))
                         data.remove(thread);
                     knownThreads.add(thread);
@@ -110,7 +119,7 @@ public class ThreadListAdapter extends EndlessAdapter  {
 }
 
 
-class ThreadListUpdater extends TimerTask{
+class ThreadListUpdater extends TimerTask {
 
     private final FLBoard board;
     private ThreadListAdapter target;
