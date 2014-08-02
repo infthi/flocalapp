@@ -1,5 +1,19 @@
 apply plugin: 'android'
 
+def getVersionCode = { ->
+    try {
+        def code = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-list', 'HEAD', '--count'
+            standardOutput = code
+        }
+        return Integer.valueOf(code.toString().split("\n")[0]);
+    }
+    catch (ignored) {
+        return -1;
+    }
+}
+
 android {
     compileSdkVersion 19
     buildToolsVersion '19.1'
@@ -8,8 +22,8 @@ android {
         applicationId "ru.ith.android.flocal"
         minSdkVersion 15
         targetSdkVersion 19
-        versionCode 1
-        versionName "1.0"
+        versionCode getVersionCode()
+        versionName "0.2." + (getVersionCode() - 68);
     }
     buildTypes {
         release {
