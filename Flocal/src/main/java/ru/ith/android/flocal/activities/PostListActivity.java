@@ -3,6 +3,7 @@ package ru.ith.android.flocal.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextMenu;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -79,7 +80,11 @@ public class PostListActivity extends ForumActivity {
     private final static int MENU_REPLY = 1;
     private final static int MENU_EDIT = 2;
     private final static int MENU_SHARE = 3;
+    private final static int MENU_SHARE_TEXT = 31;
+    private final static int MENU_SHARE_LINK = 32;
     private final static int MENU_MINIMIZE_POST = 4;
+
+    private AdapterView.AdapterContextMenuInfo mainLevelMenuInfo = null;
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -92,7 +97,11 @@ public class PostListActivity extends ForumActivity {
 
         menu.add(0, MENU_REPLY, 0, R.string.post_option_reply);
         menu.add(0, MENU_EDIT, 1, R.string.post_option_edit);
-        menu.add(0, MENU_SHARE, 2, R.string.post_option_share);
+
+        Menu shareMenu = menu.addSubMenu(0, MENU_SHARE, 2, R.string.post_option_share);
+        shareMenu.add(0, MENU_SHARE_TEXT, 0, R.string.post_option_share_text);
+        shareMenu.add(0, MENU_SHARE_LINK, 1, R.string.post_option_share_link);
+
         if (messageView.isMinimizable())
             menu.add(0, MENU_MINIMIZE_POST, 3, R.string.post_option_minimize);
     }
@@ -100,6 +109,8 @@ public class PostListActivity extends ForumActivity {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        if (acmi == null)//http://code.google.com/p/android/issues/detail?id=7139*
+            acmi = mainLevelMenuInfo;
         PostView messageView = (PostView) acmi.targetView;
         switch (item.getItemId()) {
             case MENU_REPLY:
@@ -109,13 +120,27 @@ public class PostListActivity extends ForumActivity {
                 notify("Not implemented yet");
                 return true;
             case MENU_SHARE:
-                notify("Not implemented yet");
+                mainLevelMenuInfo = acmi;
+                break;
+            case MENU_SHARE_LINK:
+                shareText(messageView.getMessageUrl());
+                return true;
+            case MENU_SHARE_TEXT:
+                shareText(messageView.getMessageText());
                 return true;
             case MENU_MINIMIZE_POST:
                 messageView.enableCutCapability();
                 return true;
         }
         return super.onContextItemSelected(item);
+    }
+
+    private void shareText(String text) {
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, text);
+        sendIntent.setType("text/plain");
+        startActivity(sendIntent);
     }
 
     public void dataLoaded() {

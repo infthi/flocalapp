@@ -24,5 +24,7 @@
     <string name="title_activity_link_handler">Forum.local</string>
     <string name="show_more_label">Show more</string>
     <string name="post_option_minimize">Minimize</string>
+    <string name="post_option_share_link">Share link</string>
+    <string name="post_option_share_text">Share text</string>
 
 </resources>

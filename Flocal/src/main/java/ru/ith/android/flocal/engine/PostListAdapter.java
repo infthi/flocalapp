@@ -69,6 +69,7 @@ public class PostListAdapter extends EndlessAdapter {
                     result = resultRef.get();
                 if (result == null) {
                     result = (PostView) ctxt.getLayoutInflater().inflate(R.layout.post_entry, null, false);
+                    result.setMessage(item.message);
 
                     final TextView postBodyView = ((TextView) result.findViewById(R.id.postEntryText));
                     SpannableStringBuilder htmlSpannable = null;

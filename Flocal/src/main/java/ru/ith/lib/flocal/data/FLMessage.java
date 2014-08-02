@@ -1,6 +1,8 @@
 package ru.ith.lib.flocal.data;
 
 
+import ru.ith.lib.flocal.FLDataLoader;
+
 public class FLMessage {
 	private final String userName;
 	private final String text;
@@ -39,5 +41,9 @@ public class FLMessage {
 
     public String getDate() {
         return date;
+    }
+
+    public String getURL() {
+        return "http://" + FLDataLoader.FLOCAL_HOST + "/showthreaded.php?Board=&Number=" + ID + "&src=";//TODO: parameters
     }
 }

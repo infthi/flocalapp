@@ -10,11 +10,30 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.ith.android.flocal.R;
 import ru.ith.android.flocal.util.Settings;
+import ru.ith.lib.flocal.data.FLMessage;
 
 /**
  * Created by infthi on 02.08.14.
  */
 public class PostView extends FrameLayout {
+    private FLMessage message;
+
+    public void setMessage(FLMessage message) {
+        this.message = message;
+    }
+
+    public String getMessageText() {
+        if (message == null)
+            return "";
+        return ((TextView) findViewById(R.id.postEntryText)).getText().toString();
+    }
+
+    public String getMessageUrl() {
+        if (message == null)
+            return "";
+        return message.getURL();
+    }
+
     enum CUT_CAPABILITY {UNAVAILABLE, MINIMIZED, MAXIMIZED}
 
     private volatile CUT_CAPABILITY postCutCapability = CUT_CAPABILITY.UNAVAILABLE;
