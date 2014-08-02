@@ -1,46 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <EditText
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/loginField"
-            android:layout_gravity="left|center_vertical"
-            android:hint="@string/login_dialog_login_default"
-            android:focusable="true"/>
+        android:id="@+id/loginField"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|center_vertical"
+        android:focusable="true"
+        android:hint="@string/login_dialog_login_default" />
 
     <EditText
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPassword"
-            android:ems="10"
-            android:id="@+id/passField"
-            android:layout_gravity="left|center_vertical"
-            android:hint="@string/login_dialog_pass_default"/>
+        android:id="@+id/passField"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|center_vertical"
+        android:ems="10"
+        android:hint="@string/login_dialog_pass_default"
+        android:inputType="textPassword" />
 
     <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_gravity="left|center_vertical"
-            android:weightSum="100">
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="left|center_vertical"
+        android:weightSum="100">
 
         <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/login_dialog_cancel_button"
-                android:id="@+id/cancelButton"
-                android:layout_gravity="center_horizontal|top"
-                android:layout_weight="50"/>
-        <Button
+            android:id="@+id/cancelButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/login_dialog_OK_button"
-            android:id="@+id/OKButton"
             android:layout_gravity="center_horizontal|top"
-            android:layout_weight="50"/>
+            android:layout_weight="50"
+            android:text="@string/login_dialog_cancel_button" />
+
+        <Button
+            android:id="@+id/OKButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|top"
+            android:layout_weight="50"
+            android:text="@string/login_dialog_OK_button" />
     </LinearLayout>
 </LinearLayout>

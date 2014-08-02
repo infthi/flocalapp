@@ -6,10 +6,8 @@ import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Toast;
 
 import ru.ith.android.flocal.R;
-import ru.ith.android.flocal.engine.MessageProcessor;
 import ru.ith.android.flocal.engine.PostListAdapter;
 import ru.ith.android.flocal.io.ImageFactory;
 import ru.ith.android.flocal.views.OverscrollableList;
@@ -53,7 +51,7 @@ public class PostListActivity extends ForumActivity {
         }
         final OverscrollableList postList = (OverscrollableList) findViewById(R.id.postListView);
 //        postList.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS); //to make post items receive click items
-        adapter = new PostListAdapter(readThread, this, postList, new ImageFactory(this), MessageProcessor.instance);
+        adapter = new PostListAdapter(readThread, this, postList, new ImageFactory(this));
         postList.setAdapter(adapter);
         if (threadUnreadID>=0)
             postList.setOverScrollListener(new overScrollListener() {
@@ -119,16 +117,18 @@ public class PostListActivity extends ForumActivity {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        //adapter.getItem(acmi.position).toString()
         switch (item.getItemId()) {
             case MENU_REPLY:
-                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_LONG).show();
+                notify("Not implemented yet");
                 return true;
             case MENU_EDIT:
-                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_LONG).show();
+                notify("Not implemented yet");
                 return true;
             case MENU_SHARE:
-                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_LONG).show();
+                notify("Not implemented yet");
+                return true;
+            case MENU_MINIMIZE_POST:
+                notify("Not implemented yet");
                 return true;
         }
         return super.onContextItemSelected(item);

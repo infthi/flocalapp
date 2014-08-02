@@ -62,7 +62,7 @@ public class ConnectionFactory {
         StringBuilder message = new StringBuilder();
 
         Log.d(FLDataLoader.FLOCAL_APP_SIGN, url);
-        message.append(method(requestType, postData) + " " + url + " HTTP/1.0\r\n");
+        message.append(method(requestType, postData)).append(" ").append(url).append(" HTTP/1.0\r\n");
 
         if ((cookies != null) && (!cookies.isEmpty())) {
             StringBuilder cookieString = new StringBuilder("Cookie: ");
@@ -75,8 +75,8 @@ public class ConnectionFactory {
         message.append("Connection: keep-alive\r\n");
 
         if (postData != null) {
-            message.append("Content-Length: " + postData.length + "\r\n");
-            message.append("Content-Type: " + postContentType + "\r\n");
+            message.append("Content-Length: ").append(postData.length).append("\r\n");
+            message.append("Content-Type: ").append(postContentType).append("\r\n");
         }
         message.append("\r\n");
 

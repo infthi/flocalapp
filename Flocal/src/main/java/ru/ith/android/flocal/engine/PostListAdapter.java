@@ -54,7 +54,7 @@ public class PostListAdapter extends EndlessAdapter {
     private final ListView target;
     private final static Executor ImageLoader = new ThreadPoolExecutor(3, 5, 5, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 
-    public PostListAdapter(FLThreadHeader thread, final PostListActivity ctxt, final ListView target, final ImageFactory imageGetter, final Html.TagHandler tagHandler) {
+    public PostListAdapter(FLThreadHeader thread, final PostListActivity ctxt, final ListView target, final ImageFactory imageGetter) {
         super(new ArrayAdapter<FLMessageWrapper>(ctxt, R.layout.thread_entry) {
             Map<Long, Reference<View>> cachedMessageViews = new HashMap<Long, Reference<View>>();
 
@@ -131,7 +131,6 @@ public class PostListAdapter extends EndlessAdapter {
 
     private long firstKnownPost = -1l, lastKnownPost = -1l;
     private AtomicBoolean scrolledToEnd = new AtomicBoolean(false);
-    public Thread checkerThread = null;
 
     int lastLoadedPostKnownOffset = -1;
     int firstLoadedPostKnownOffset = -1;

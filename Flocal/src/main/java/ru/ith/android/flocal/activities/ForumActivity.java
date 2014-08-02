@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,12 +16,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import ru.ith.android.flocal.R;
-import ru.ith.android.flocal.engine.MessageProcessor;
 import ru.ith.android.flocal.engine.SessionContainer;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 
 /**
+ * Basic activity with basic implementations
  * Created by adminfthi on 25.06.13.
  */
 public abstract class ForumActivity extends Activity {
@@ -62,7 +61,7 @@ public abstract class ForumActivity extends Activity {
         loginDialog.setContentView(R.layout.login_dialog);
         loginDialog.setTitle(getString(R.string.login_dialog_title));
 
-        ((Button) loginDialog.findViewById(R.id.cancelButton)).setOnClickListener(new View.OnClickListener() {
+        loginDialog.findViewById(R.id.cancelButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 runOnUiThread(new Runnable() {
@@ -77,7 +76,7 @@ public abstract class ForumActivity extends Activity {
         final EditText loginText = (EditText) loginDialog.findViewById(R.id.loginField);
         final EditText passText = (EditText) loginDialog.findViewById(R.id.passField);
 
-        ((Button) loginDialog.findViewById(R.id.OKButton)).setOnClickListener(new View.OnClickListener() {
+        loginDialog.findViewById(R.id.OKButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final ProgressDialog progress = new ProgressDialog(loginDialog.getContext());
@@ -186,7 +185,6 @@ public abstract class ForumActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        MessageProcessor.instance.setContext(this);
         refresher = new Timer("Thread_list_refresher", true);
         makeRefreshTask(0);
     }
