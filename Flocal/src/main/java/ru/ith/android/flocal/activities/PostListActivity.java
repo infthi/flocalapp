@@ -11,6 +11,7 @@ import ru.ith.android.flocal.R;
 import ru.ith.android.flocal.engine.PostListAdapter;
 import ru.ith.android.flocal.io.ImageFactory;
 import ru.ith.android.flocal.views.OverscrollableList;
+import ru.ith.android.flocal.views.PostView;
 import ru.ith.android.flocal.views.overScrollListener;
 import ru.ith.lib.flocal.data.FLMessage;
 import ru.ith.lib.flocal.data.FLThreadHeader;
@@ -62,26 +63,6 @@ public class PostListActivity extends ForumActivity {
                     }
                 }
             });
-//        OnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-//
-//            @Override
-//            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-//                final FLMessage msg = adapter.getMessage(position);
-//                if (msg == null)
-//                    return false;
-//                View messageView = parent.getChildAt(position);//dapter.getView(position);
-//                messageView.showContextMenu();
-//                return true;
-//            }
-//        });
-//        postList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View sender, int position, long id) {
-//                registerForContextMenu(sender);
-//                openContextMenu(sender);
-//                unregisterForContextMenu(sender);
-//            }
-//        });
         registerForContextMenu(postList);
     }
 
@@ -107,16 +88,19 @@ public class PostListActivity extends ForumActivity {
         FLMessage message = adapter.getMessage(info.position);
         if (message == null)
             return;
-        View messageView = info.targetView;
+        PostView messageView = (PostView) info.targetView;
 
         menu.add(0, MENU_REPLY, 0, R.string.post_option_reply);
         menu.add(0, MENU_EDIT, 1, R.string.post_option_edit);
         menu.add(0, MENU_SHARE, 2, R.string.post_option_share);
+        if (messageView.isMinimizable())
+            menu.add(0, MENU_MINIMIZE_POST, 3, R.string.post_option_minimize);
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        PostView messageView = (PostView) acmi.targetView;
         switch (item.getItemId()) {
             case MENU_REPLY:
                 notify("Not implemented yet");
@@ -128,7 +112,7 @@ public class PostListActivity extends ForumActivity {
                 notify("Not implemented yet");
                 return true;
             case MENU_MINIMIZE_POST:
-                notify("Not implemented yet");
+                messageView.enableCutCapability();
                 return true;
         }
         return super.onContextItemSelected(item);

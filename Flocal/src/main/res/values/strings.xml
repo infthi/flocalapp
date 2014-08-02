@@ -23,5 +23,6 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_link_handler">Forum.local</string>
     <string name="show_more_label">Show more</string>
+    <string name="post_option_minimize">Minimize</string>
 
 </resources>

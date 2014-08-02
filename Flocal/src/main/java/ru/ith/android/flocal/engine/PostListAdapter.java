@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import ru.ith.android.flocal.R;
 import ru.ith.android.flocal.activities.PostListActivity;
 import ru.ith.android.flocal.io.ImageFactory;
-import ru.ith.android.flocal.util.Settings;
+import ru.ith.android.flocal.views.PostView;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLMessage;
@@ -56,19 +56,19 @@ public class PostListAdapter extends EndlessAdapter {
 
     public PostListAdapter(FLThreadHeader thread, final PostListActivity ctxt, final ListView target, final ImageFactory imageGetter) {
         super(new ArrayAdapter<FLMessageWrapper>(ctxt, R.layout.thread_entry) {
-            Map<Long, Reference<View>> cachedMessageViews = new HashMap<Long, Reference<View>>();
+            Map<Long, Reference<PostView>> cachedMessageViews = new HashMap<Long, Reference<PostView>>();
 
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 FLMessageWrapper item = getItem(position);
                 if (item.isLoadingStub)
                     return getPendingViewImpl(parent);
-                Reference<View> resultRef = cachedMessageViews.get(item.message.getID());
-                View result = null;
+                Reference<PostView> resultRef = cachedMessageViews.get(item.message.getID());
+                PostView result = null;
                 if (resultRef != null)
                     result = resultRef.get();
                 if (result == null) {
-                    result = ctxt.getLayoutInflater().inflate(R.layout.post_entry, null, false);
+                    result = (PostView) ctxt.getLayoutInflater().inflate(R.layout.post_entry, null, false);
 
                     final TextView postBodyView = ((TextView) result.findViewById(R.id.postEntryText));
                     SpannableStringBuilder htmlSpannable = null;
@@ -83,15 +83,13 @@ public class PostListAdapter extends EndlessAdapter {
                     postBodyView.setText(htmlSpannable);
                     postBodyView.setMovementMethod(LinkMovementMethod.getInstance());
 
-                    final View showMore = result.findViewById(R.id.postEntryShowMore);
+                    result.enableCutCapability();
 
-                    addCutCapatibility(postBodyView, showMore, ctxt);
-
-                    ((TextView) result.findViewById(R.id.postEntryAuthor)).setText(item.message.getAuthor());
+                    ((TextView) result.findViewById(R.id.postEntryAuthor)).setText(item.message.getAuthor());//TODO: re: may be in here too
                     ((TextView) result.findViewById(R.id.postEntryDate)).setText(item.message.getDate());
                     imageGetter.getAvatar(item.message.getAuthor(), ((ImageView) result.findViewById(R.id.postEntryAvatar)));
 
-                    cachedMessageViews.put(item.message.getID(), new WeakReference<View>(result));
+                    cachedMessageViews.put(item.message.getID(), new WeakReference<PostView>(result));
                 }
                 return result;
             }
@@ -101,32 +99,6 @@ public class PostListAdapter extends EndlessAdapter {
         this.thread = thread;
         this.firstKnownPost = thread.getUnreadID();
         data = (ArrayAdapter) getWrappedAdapter();
-    }
-
-    public static void addCutCapatibility(final TextView postBodyView, final View showMore, final PostListActivity ctxt) {
-        postBodyView.setMaxLines(Settings.instance.getPostCutLimit());
-        final View.OnLayoutChangeListener listener = new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                postBodyView.removeOnLayoutChangeListener(this);
-                int limit = Settings.instance.getPostCutLimit();
-                if (postBodyView.getLineCount() > limit) {
-                    showMore.setVisibility(View.VISIBLE);
-                } else {
-                    showMore.setVisibility(View.GONE);
-                }
-                showMore.postInvalidate();
-            }
-        };
-
-        showMore.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                postBodyView.setMaxLines(Integer.MAX_VALUE);
-                showMore.setVisibility(View.GONE);
-            }
-        });
-        postBodyView.addOnLayoutChangeListener(listener);
     }
 
     private long firstKnownPost = -1l, lastKnownPost = -1l;
