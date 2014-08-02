@@ -1,19 +1,9 @@
 package ru.ith.android.flocal.engine;
 
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.text.Html;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ImageSpan;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,11 +15,6 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,7 +37,6 @@ public class PostListAdapter extends EndlessAdapter {
     private final ArrayAdapter<FLMessageWrapper> data;
     private final PostListActivity ctxt;
     private final ListView target;
-    private final static Executor ImageLoader = new ThreadPoolExecutor(3, 5, 5, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 
     public PostListAdapter(FLThreadHeader thread, final PostListActivity ctxt, final ListView target, final ImageFactory imageGetter) {
         super(new ArrayAdapter<FLMessageWrapper>(ctxt, R.layout.thread_entry) {
@@ -70,31 +54,12 @@ public class PostListAdapter extends EndlessAdapter {
                 if (result == null) {
                     result = (PostView) ctxt.getLayoutInflater().inflate(R.layout.post_entry, null, false);
                     result.setMessage(item.message);
-
-                    final TextView postBodyView = ((TextView) result.findViewById(R.id.postEntryText));
-                    SpannableStringBuilder htmlSpannable = null;
-                    Spanned spanned = Html.fromHtml(item.message.getPostData());
-                    if (spanned instanceof SpannableStringBuilder) {
-                        htmlSpannable = (SpannableStringBuilder) spanned;
-                    } else {
-                        htmlSpannable = new SpannableStringBuilder(spanned);
-                    }
-                    new ImageLoadTask(htmlSpannable, postBodyView, imageGetter).executeOnExecutor(ImageLoader);
-
-                    postBodyView.setText(htmlSpannable);
-                    postBodyView.setMovementMethod(LinkMovementMethod.getInstance());
-
-                    result.enableCutCapability();
-
-                    ((TextView) result.findViewById(R.id.postEntryAuthor)).setText(item.message.getAuthor());//TODO: re: may be in here too
-                    ((TextView) result.findViewById(R.id.postEntryDate)).setText(item.message.getDate());
-                    imageGetter.getAvatar(item.message.getAuthor(), ((ImageView) result.findViewById(R.id.postEntryAvatar)));
-
                     cachedMessageViews.put(item.message.getID(), new WeakReference<PostView>(result));
                 }
                 return result;
             }
         });
+        PostView.setImageLoader(imageGetter);
         this.target = target;
         this.ctxt = ctxt;
         this.thread = thread;
@@ -351,87 +316,6 @@ class FLMessageWrapper {
     public FLMessageWrapper() {
         isLoadingStub = true;
         message = null;
-    }
-
-}
-
-class updateHTMLPack {
-    public final ImageSpan img;
-    public final Drawable d;
-
-    updateHTMLPack(ImageSpan spanToUpdate, Drawable d) {
-        this.img = spanToUpdate;
-        this.d = d;
-    }
-}
-
-class ImageLoadTask extends AsyncTask<Void, updateHTMLPack, Void> {
-
-    DisplayMetrics metrics = new DisplayMetrics();
-    private final SpannableStringBuilder htmlSpannable;
-    private ImageFactory mFactory;
-    private TextView htmlTextView;
-
-    ImageLoadTask(SpannableStringBuilder htmlSpannable, TextView htmlTextView, ImageFactory factory) {
-        this.htmlSpannable = htmlSpannable;
-        mFactory = factory;
-        this.htmlTextView = htmlTextView;
-    }
-
-    @Override
-    protected void onPreExecute() {
-        // we need this to properly scale the images later
-        //getWindowManager().getDefaultDisplay().getMetrics(metrics);
-    }
-
-    @Override
-    protected Void doInBackground(Void... params) {
-        // iterate over all images found in the html
-        for (final ImageSpan img : htmlSpannable.getSpans(0,
-                htmlSpannable.length(), ImageSpan.class)) {
-            Drawable d = getImageFile(img.getSource());
-            if (d == null) {
-                Log.d(FLDataLoader.FLOCAL_APP_SIGN, "Failed to load [" + img.getSource() + "]; null");
-                //TODO: Load some kinf of "failed to load" image here
-            } else {
-                d.setBounds(0, 0, (int) (d.getIntrinsicWidth() * mFactory.dpK * 1.5), (int) (d.getIntrinsicHeight() * mFactory.dpK * 1.5));
-                publishProgress(new updateHTMLPack(img, d));
-            }
-        }
-        return null;
-    }
-
-    @Override
-    protected void onProgressUpdate(updateHTMLPack... values) {
-        updateHTMLPack pk = values[0];
-        // now we create a new ImageSpan
-        ImageSpan newImg = new ImageSpan(pk.d, pk.img.getSource());
-
-        // find the position of the old ImageSpan
-        int start = htmlSpannable.getSpanStart(pk.img);
-        int end = htmlSpannable.getSpanEnd(pk.img);
-
-        // remove the old ImageSpan
-        htmlSpannable.removeSpan(pk.img);
-
-        // add the new ImageSpan
-        htmlSpannable.setSpan(newImg, start, end,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        // finally we have to update the TextView with our
-        // updates Spannable to display the image
-        htmlTextView.setText(htmlSpannable);
-    }
-
-    private TreeMap<String, Drawable> cache = new TreeMap<String, Drawable>();
-
-    private Drawable getImageFile(String src) {
-        Drawable res;
-        if ((res = cache.get(src)) == null) {
-            res = mFactory.getDrawable(src);
-            cache.put(src, res);
-        }
-        return res;
     }
 
 }
