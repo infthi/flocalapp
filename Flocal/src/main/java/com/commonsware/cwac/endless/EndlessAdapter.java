@@ -24,8 +24,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
-import java.util.concurrent.atomic.AtomicBoolean;
+
 import com.commonsware.cwac.adapter.AdapterWrapper;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.ith.lib.flocal.data.FLMessage;
 
@@ -211,7 +213,7 @@ abstract public class EndlessAdapter extends AdapterWrapper {
 
     @Override
     public boolean areAllItemsEnabled() {
-        return(false);
+        return (false);
     }
 
     @Override

@@ -64,14 +64,18 @@ public class PostListActivity extends ForumActivity {
                     }
                 }
             });
-        postList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                final FLMessage msg = adapter.getMessage(position);
-                return true;
-            }
-        });
+//        OnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+//
+//            @Override
+//            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+//                final FLMessage msg = adapter.getMessage(position);
+//                if (msg == null)
+//                    return false;
+//                View messageView = parent.getChildAt(position);//dapter.getView(position);
+//                messageView.showContextMenu();
+//                return true;
+//            }
+//        });
 //        postList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 //            @Override
 //            public void onItemClick(AdapterView<?> parent, View sender, int position, long id) {
@@ -101,6 +105,11 @@ public class PostListActivity extends ForumActivity {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+        FLMessage message = adapter.getMessage(info.position);
+        if (message == null)
+            return;
+        View messageView = info.targetView;
 
         menu.add(0, MENU_REPLY, 0, R.string.post_option_reply);
         menu.add(0, MENU_EDIT, 1, R.string.post_option_edit);

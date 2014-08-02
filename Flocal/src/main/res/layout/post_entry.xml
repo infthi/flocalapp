@@ -69,13 +69,13 @@
                     android:layout_gravity="right"
                     android:baselineAligned="false"
                     android:orientation="horizontal"
-                    android:visibility="gone">
+                    android:visibility="invisible">
 
-                <TextView
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:gravity="center_vertical"
-                        android:text="Show more" />
+                        android:text="@string/show_more_label" />
 
                     <ImageView
                         android:id="@+id/imageView"

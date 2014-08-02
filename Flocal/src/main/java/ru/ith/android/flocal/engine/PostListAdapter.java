@@ -84,7 +84,8 @@ public class PostListAdapter extends EndlessAdapter {
                     postBodyView.setMovementMethod(LinkMovementMethod.getInstance());
 
                     final View showMore = result.findViewById(R.id.postEntryShowMore);
-                    addCutCapatibility(postBodyView, showMore);
+
+                    addCutCapatibility(postBodyView, showMore, ctxt);
 
                     ((TextView) result.findViewById(R.id.postEntryAuthor)).setText(item.message.getAuthor());
                     ((TextView) result.findViewById(R.id.postEntryDate)).setText(item.message.getDate());
@@ -102,27 +103,27 @@ public class PostListAdapter extends EndlessAdapter {
         data = (ArrayAdapter) getWrappedAdapter();
     }
 
-    private static void addCutCapatibility(final TextView postBodyView, final View showMorePanel) {
-        showMorePanel.setVisibility(View.GONE);
+    public static void addCutCapatibility(final TextView postBodyView, final View showMore, final PostListActivity ctxt) {
+        postBodyView.setMaxLines(Settings.instance.getPostCutLimit());
         final View.OnLayoutChangeListener listener = new View.OnLayoutChangeListener() {
-            //if text is too long we do cut it and show a 'show more' panel
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                TextView tv = (TextView) v;
-                if (tv.getLineCount() > Settings.instance.getPostCutLimit()) {
-                    tv.setMaxLines(Settings.instance.getPostCutLimit());
-                    showMorePanel.setVisibility(View.VISIBLE);
-                    postBodyView.invalidate();
+                postBodyView.removeOnLayoutChangeListener(this);
+                int limit = Settings.instance.getPostCutLimit();
+                if (postBodyView.getLineCount() > limit) {
+                    showMore.setVisibility(View.VISIBLE);
+                } else {
+                    showMore.setVisibility(View.GONE);
                 }
+                showMore.postInvalidate();
             }
         };
 
-        showMorePanel.setOnClickListener(new View.OnClickListener() {
+        showMore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 postBodyView.setMaxLines(Integer.MAX_VALUE);
-                showMorePanel.setVisibility(View.GONE);
-                postBodyView.removeOnLayoutChangeListener(listener);
+                showMore.setVisibility(View.GONE);
             }
         });
         postBodyView.addOnLayoutChangeListener(listener);

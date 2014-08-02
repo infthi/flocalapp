@@ -211,4 +211,13 @@ public abstract class ForumActivity extends Activity {
             }
         });
     }
+
+    public final void notify(final String text) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(ForumActivity.this, text, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 }
