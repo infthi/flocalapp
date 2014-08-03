@@ -106,6 +106,8 @@ public class PostListActivity extends ForumActivity {
             menu.add(0, MENU_MINIMIZE_POST, 3, R.string.post_option_minimize);
     }
 
+    private PostView lastPostWithReplyWindow = null; //no need to make multithread protection since it is accessed only from the UI thread?
+
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
@@ -114,7 +116,10 @@ public class PostListActivity extends ForumActivity {
         PostView messageView = (PostView) acmi.targetView;
         switch (item.getItemId()) {
             case MENU_REPLY:
-                notify("Not implemented yet");
+                if (lastPostWithReplyWindow != null)
+                    lastPostWithReplyWindow.showReplyWindow(false);
+                lastPostWithReplyWindow = messageView;
+                messageView.showReplyWindow(true);
                 return true;
             case MENU_EDIT:
                 notify("Not implemented yet");

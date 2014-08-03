@@ -126,6 +126,12 @@ public class PostView extends FrameLayout {
         postBodyView.addOnLayoutChangeListener(listener);
     }
 
+    public void showReplyWindow(boolean isVisible) {
+        findViewById(R.id.PostEntryReply).setVisibility(isVisible ? VISIBLE : GONE);
+        postInvalidate();
+        findViewById(R.id.PostEntryReplyText).requestFocus();
+    }
+
     public boolean isMinimizable() {
         return postCutCapability == CUT_CAPABILITY.MAXIMIZED;
     }
