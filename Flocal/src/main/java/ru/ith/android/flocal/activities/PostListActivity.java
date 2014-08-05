@@ -11,7 +11,7 @@ import android.widget.AdapterView;
 import ru.ith.android.flocal.R;
 import ru.ith.android.flocal.engine.PostListAdapter;
 import ru.ith.android.flocal.io.ImageFactory;
-import ru.ith.android.flocal.views.OverscrollableList;
+import ru.ith.android.flocal.views.OverScrollableList;
 import ru.ith.android.flocal.views.PostView;
 import ru.ith.android.flocal.views.overScrollListener;
 import ru.ith.lib.flocal.data.FLMessage;
@@ -51,7 +51,7 @@ public class PostListActivity extends ForumActivity {
         {
             setTitle(threadName); //TODO: set scrollable
         }
-        final OverscrollableList postList = (OverscrollableList) findViewById(R.id.postListView);
+        final OverScrollableList postList = (OverScrollableList) findViewById(R.id.postListView);
 //        postList.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS); //to make post items receive click items
         adapter = new PostListAdapter(readThread, this, postList, new ImageFactory(this));
         postList.setAdapter(adapter);

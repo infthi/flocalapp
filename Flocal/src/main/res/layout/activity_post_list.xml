@@ -10,7 +10,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".PostListActivity">
 
-    <ru.ith.android.flocal.views.OverscrollableList
+    <ru.ith.android.flocal.views.OverScrollableList
         android:id="@id/postListView"
         android:layout_width="wrap_content"
             android:layout_height="wrap_content"

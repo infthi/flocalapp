@@ -7,17 +7,18 @@ import android.widget.ListView;
 /**
  * Created by infthi on 6/26/13.
  */
-public class OverscrollableList extends ListView {
+public class OverScrollableList extends ListView {
     private volatile overScrollListener listener = null;
-    public OverscrollableList(Context context) {
+
+    public OverScrollableList(Context context) {
         super(context);
     }
 
-    public OverscrollableList(Context context, AttributeSet attrs) {
+    public OverScrollableList(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public OverscrollableList(Context context, AttributeSet attrs, int defStyle) {
+    public OverScrollableList(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
