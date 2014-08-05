@@ -1,8 +1,11 @@
 package ru.ith.android.flocal.activities;
 
+import android.app.Dialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -17,6 +20,7 @@ import java.util.List;
 
 import ru.ith.android.flocal.R;
 import ru.ith.android.flocal.engine.SessionContainer;
+import ru.ith.android.flocal.util.BuildData;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLBoard;
@@ -88,5 +92,28 @@ public class BoardListActivity extends ForumActivity {
     @Override
     long getRefreshPeriod() {
         return 10000;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        boolean result = super.onCreateOptionsMenu(menu);
+        menu.add(1, 1025, 10, "About");
+        return result;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getGroupId() == 1) {
+            if (item.getItemId() == 1025) {
+                Dialog versionDialog = new Dialog(this);
+                versionDialog.setTitle("About");
+                versionDialog.setContentView(R.layout.dialog_version);
+                ((TextView) versionDialog.findViewById(R.id.versionVersionDataTextView)).setText(BuildData.getVersionName(this));
+                ((TextView) versionDialog.findViewById(R.id.versionBuiltDataTextView)).setText(BuildData.getBuildDate(this));
+                versionDialog.show();
+
+            }
+        }
+        return super.onContextItemSelected(item);
     }
 }
