@@ -14,6 +14,23 @@ def getVersionCode = { ->
     }
 }
 
+def getBranch = { ->
+    try {
+        def code = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'symbolic-ref', '--short', 'HEAD'
+            standardOutput = code
+        }
+        def branch = code.toString().split("\n")[0];
+        if (branch.equals("master"))
+            return "";
+        return "/" + branch;
+    }
+    catch (ignored) {
+        return "";
+    }
+}
+
 android {
     compileSdkVersion 19
     buildToolsVersion '19.1'
@@ -23,7 +40,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 19
         versionCode getVersionCode()
-        versionName "0.2." + (getVersionCode() - 68);
+        versionName "0.2." + (getVersionCode() - 68) + getBranch();
     }
     buildTypes {
         release {
