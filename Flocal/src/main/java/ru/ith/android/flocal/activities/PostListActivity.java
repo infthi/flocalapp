@@ -45,7 +45,7 @@ public class PostListActivity extends ForumActivity {
         //TODO: trycatch
 
         String threadName = intent.getStringExtra(KEY_THREAD_NAME);
-        String threadSrc =  intent.getStringExtra(KEY_THREAD_SRC);
+        String threadSrc = intent.getStringExtra(KEY_THREAD_SRC);
         FLThreadHeader readThread = new FLThreadHeader(threadName, null, 0, 0, threadID, threadUnreadID, false, threadSrc);
 
         {
@@ -55,11 +55,11 @@ public class PostListActivity extends ForumActivity {
 //        postList.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS); //to make post items receive click items
         adapter = new PostListAdapter(readThread, this, postList, new ImageFactory(this));
         postList.setAdapter(adapter);
-        if (threadUnreadID>=0)
+        if (threadUnreadID >= 0)
             postList.setOverScrollListener(new overScrollListener() {
                 @Override
                 public void overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX, int scrollRangeY, int maxOverScrollX, int maxOverScrollY, boolean touchEvent) {
-                    if (deltaY<0){
+                    if (deltaY < 0) {
                         adapter.upOverScroll();
                     }
                 }
@@ -106,8 +106,6 @@ public class PostListActivity extends ForumActivity {
             menu.add(0, MENU_MINIMIZE_POST, 3, R.string.post_option_minimize);
     }
 
-    private PostView lastPostWithReplyWindow = null; //no need to make multithread protection since it is accessed only from the UI thread?
-
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
@@ -116,10 +114,7 @@ public class PostListActivity extends ForumActivity {
         PostView messageView = (PostView) acmi.targetView;
         switch (item.getItemId()) {
             case MENU_REPLY:
-                if (lastPostWithReplyWindow != null)
-                    lastPostWithReplyWindow.showReplyWindow(false);
-                lastPostWithReplyWindow = messageView;
-                messageView.showReplyWindow(true);
+                messageView.showReplyWindow();
                 return true;
             case MENU_EDIT:
                 notify("Not implemented yet");

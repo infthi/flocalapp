@@ -59,7 +59,7 @@ public abstract class ForumActivity extends Activity {
     private void doLogin() {
         final Dialog loginDialog = new Dialog(this);
         loginDialog.setContentView(R.layout.login_dialog);
-        loginDialog.setTitle(getString(R.string.login_dialog_title));
+        loginDialog.setTitle(getString(R.string.dialog_login_title));
 
         loginDialog.findViewById(R.id.cancelButton).setOnClickListener(new View.OnClickListener() {
             @Override

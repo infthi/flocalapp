@@ -88,32 +88,6 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/PostEntryReply"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:gravity="fill_horizontal"
-            android:orientation="horizontal"
-            android:visibility="gone"
-            android:weightSum="1">
-
-            <EditText
-                android:id="@+id/PostEntryReplyText"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:editable="true"
-                android:ems="10"
-                android:enabled="true"
-                android:inputType="textMultiLine" />
-
-            <ImageButton
-                android:id="@+id/PostEntryReplyButton"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:src="@android:drawable/ic_menu_send" />
-        </LinearLayout>
-
     </LinearLayout>
 
 </ru.ith.android.flocal.views.PostView>

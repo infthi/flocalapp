@@ -5,11 +5,13 @@
     <string name="title_activity_board_list">Flocal</string>
     <string name="login_menu">Login</string>
     <string name="logout_menu">Logout</string>
-    <string name="login_dialog_title">Enter credentials</string>
+    <string name="dialog_login_title">Enter credentials</string>
+    <string name="dialog_reply_title">Reply</string>
     <string name="login_dialog_login_default">Login</string>
     <string name="login_dialog_pass_default">Password</string>
-    <string name="login_dialog_OK_button">OK</string>
-    <string name="login_dialog_cancel_button">Cancel</string>
+    <string name="dialog_login_button_OK">OK</string>
+    <string name="dialog_common_button_cancel">Cancel</string>
+    <string name="dialog_reply_button_reply">Reply</string>
     <string name="login_dialog_loginning">Logging in…</string>
     <string name="login_dialog_logging_out">Logging out…</string>
     <string name="title_activity_thread_list">Flocal</string>

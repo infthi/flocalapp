@@ -1,5 +1,7 @@
 package ru.ith.android.flocal.views;
 
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -13,9 +15,14 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.TreeMap;
 import java.util.concurrent.Executor;
@@ -25,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.ith.android.flocal.R;
+import ru.ith.android.flocal.activities.PostListActivity;
 import ru.ith.android.flocal.io.ImageFactory;
 import ru.ith.android.flocal.util.Settings;
 import ru.ith.lib.flocal.FLDataLoader;
@@ -79,6 +87,7 @@ public class PostView extends FrameLayout {
     }
 
     enum CUT_CAPABILITY {UNAVAILABLE, MINIMIZED, MAXIMIZED}
+
     private volatile CUT_CAPABILITY postCutCapability = CUT_CAPABILITY.UNAVAILABLE;
     private final AtomicBoolean isTextCut = new AtomicBoolean(false);
 
@@ -126,10 +135,34 @@ public class PostView extends FrameLayout {
         postBodyView.addOnLayoutChangeListener(listener);
     }
 
-    public void showReplyWindow(boolean isVisible) {
-        findViewById(R.id.PostEntryReply).setVisibility(isVisible ? VISIBLE : GONE);
-        postInvalidate();
-        findViewById(R.id.PostEntryReplyText).requestFocus();
+    public void showReplyWindow() {
+        final Dialog reply = new Dialog(getContext());
+        reply.setContentView(R.layout.dialog_reply);
+        reply.setTitle(R.string.dialog_reply_title);
+        final EditText edit = ((EditText) reply.findViewById(R.id.replyText));
+        ((Button) reply.findViewById(R.id.cancelButton)).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reply.hide();
+            }
+        });
+        ((Button) reply.findViewById(R.id.dialogReplyButton)).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String text = edit.getText().toString();
+                ((PostListActivity) PostView.this.getContext()).notify(text);
+                final ProgressDialog progress = new ProgressDialog(getContext());
+                progress.setMessage("Sending...");
+                progress.setCancelable(false);
+                progress.show();
+                new PostPostTask(progress, reply).execute(text);
+            }
+        });
+        reply.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        reply.show();
+        edit.requestFocus();
+        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(edit, InputMethodManager.SHOW_IMPLICIT);
     }
 
     public boolean isMinimizable() {
@@ -215,5 +248,41 @@ class updateHTMLPack {
     updateHTMLPack(ImageSpan spanToUpdate, Drawable d) {
         this.img = spanToUpdate;
         this.d = d;
+    }
+}
+
+class PostPostTask extends AsyncTask<String, Void, Boolean> {
+    private final ProgressDialog progress;
+    private final Dialog reply;
+    private volatile String problem = "Unknown problem";
+
+    public PostPostTask(ProgressDialog progress, Dialog reply) {
+        this.progress = progress;
+        this.reply = reply;
+    }
+
+    @Override
+    protected Boolean doInBackground(String... params) {
+        try {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+            }
+            throw new RuntimeException("Not implemented yet");//TODO
+        } catch (Exception e) {
+            problem = e.getMessage();
+            return false;
+        }
+    }
+
+
+    @Override
+    protected void onPostExecute(Boolean aBoolean) {
+        super.onPostExecute(aBoolean);
+        progress.hide();
+        if (aBoolean)
+            reply.hide();
+        else
+            Toast.makeText(reply.getContext(), problem, Toast.LENGTH_SHORT).show();
     }
 }

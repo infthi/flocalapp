@@ -3,30 +3,21 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:weightSum="1">
 
     <EditText
-        android:id="@+id/loginField"
-        android:layout_width="fill_parent"
+        android:id="@+id/replyText"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="left|center_vertical"
-        android:focusable="true"
-        android:hint="@string/login_dialog_login_default" />
-
-    <EditText
-        android:id="@+id/passField"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="left|center_vertical"
+        android:layout_weight="0.20"
         android:ems="10"
-        android:hint="@string/login_dialog_pass_default"
-        android:inputType="textPassword" />
+        android:inputType="textMultiLine" />
 
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_gravity="left|center_vertical"
-        android:weightSum="100">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/cancelButton"
@@ -37,11 +28,12 @@
             android:text="@string/dialog_common_button_cancel" />
 
         <Button
-            android:id="@+id/OKButton"
+            android:id="@+id/dialogReplyButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal|top"
             android:layout_weight="50"
-            android:text="@string/dialog_login_button_OK" />
+            android:text="@string/dialog_reply_button_reply" />
     </LinearLayout>
+
 </LinearLayout>
