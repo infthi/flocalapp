@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.ith.android.flocal.R;
 import ru.ith.android.flocal.activities.PostListActivity;
+import ru.ith.android.flocal.engine.SessionContainer;
 import ru.ith.android.flocal.io.ImageFactory;
 import ru.ith.android.flocal.util.Settings;
 import ru.ith.lib.flocal.FLDataLoader;
@@ -155,7 +156,7 @@ public class PostView extends FrameLayout {
                 progress.setMessage("Sending...");
                 progress.setCancelable(false);
                 progress.show();
-                new PostPostTask(progress, reply).execute(text);
+                new PostPostTask(progress, reply, PostView.this.message).execute(text);
             }
         });
         reply.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
@@ -254,21 +255,20 @@ class updateHTMLPack {
 class PostPostTask extends AsyncTask<String, Void, Boolean> {
     private final ProgressDialog progress;
     private final Dialog reply;
+    private final FLMessage parent;
     private volatile String problem = "Unknown problem";
 
-    public PostPostTask(ProgressDialog progress, Dialog reply) {
+    public PostPostTask(ProgressDialog progress, Dialog reply, FLMessage parent) {
         this.progress = progress;
         this.reply = reply;
+        this.parent = parent;
     }
 
     @Override
     protected Boolean doInBackground(String... params) {
         try {
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-            }
-            throw new RuntimeException("Not implemented yet");//TODO
+            FLDataLoader.sendMessage(SessionContainer.getSessionInstance(), parent, params[0]);
+            return true;
         } catch (Exception e) {
             problem = e.getMessage();
             return false;

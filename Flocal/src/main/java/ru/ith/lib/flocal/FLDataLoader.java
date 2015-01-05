@@ -14,6 +14,7 @@ import java.util.TreeMap;
 
 import ru.ith.lib.flocal.data.AvatarMetaData;
 import ru.ith.lib.flocal.data.FLBoard;
+import ru.ith.lib.flocal.data.FLDataConfiguration;
 import ru.ith.lib.flocal.data.FLMessage;
 import ru.ith.lib.flocal.data.FLMessageSet;
 import ru.ith.lib.flocal.data.FLThreadHeader;
@@ -31,16 +32,24 @@ public class FLDataLoader {
     public static final String FLOCAL_HOST = "forumbgz.ru";
     public static final String FLOCAL_APP_SIGN = "forum-local";
 
-    public static final String generateLoginData(String login, String password)
-            throws FLException {
+    private static FLDataConfiguration getProtectionKey(FLSession session) throws FLException {
+        HTMLResponse rdr = null;
         try {
-            HTMLResponse rdr = doQuery("/login.php?showlite=sl", null);
-            Elements postKeyElement = rdr
-                    .getAll("form > input[name=postdata_protection_key]");
+            rdr = doQuery("/login.php?showlite=sl", session);
+            Elements postKeyElement = rdr.getAll("input[name=postdata_protection_key]");
             if (postKeyElement.isEmpty())
                 throw new FLException("Malformed server responce",
                         "no postdata_protection_key");
-            String postKey = postKeyElement.get(0).attr("value");
+            return new FLDataConfiguration(postKeyElement.get(0).attr("value"), rdr.metaData.getEncoding());
+        } catch (IOException e) {
+            throw new FLException("Failed to сщььгтшсфеу", e.getMessage());
+        }
+    }
+
+    public static final String generateLoginData(String login, String password)
+            throws FLException {
+        try {
+            FLDataConfiguration config = getProtectionKey(null);
 
             Map<String, String> loginData = new TreeMap<String, String>();
             loginData.put("Loginname", login);
@@ -48,12 +57,12 @@ public class FLDataLoader {
             loginData.put("rememberme", "1");
             loginData.put("firstlogin", "1");
             loginData.put("ipbind", "0");
-            loginData.put("postdata_protection_key", postKey);
+            loginData.put("postdata_protection_key", config.POST_PROTECTION_KEY);
             loginData.put("buttlogin", "1");
 
-            rdr = (HTMLResponse) ConnectionFactory.doQuery(FLOCAL_HOST,
+            HTMLResponse rdr = (HTMLResponse) ConnectionFactory.doQuery(FLOCAL_HOST,
                     "/start_page.php?showlite=sl", null, loginData,
-                    rdr.metaData.getEncoding(), ProviderEnum.HTML);
+                    config.encoding, ProviderEnum.HTML);
             String mysess = rdr.metaData.getCookie("w3t_w3t_mysess");
             String key = rdr.metaData.getCookie("w3t_w3t_key");
             String myID = rdr.metaData.getCookie("w3t_w3t_myid");
@@ -426,7 +435,7 @@ public class FLDataLoader {
                     continue;
 
                 FLMessage message = new FLMessage(userName,
-                        postHtml.toString(), caption, postDate, rating, messageID);
+                        postHtml.toString(), caption, postDate, rating, messageID, thread.getID());
                 result.add(message);
             }
 
@@ -485,5 +494,59 @@ public class FLDataLoader {
     public static InputStream fetchFile(String URL) throws IOException {
         BinaryResponse response = (BinaryResponse) ConnectionFactory.doQuery(FLOCAL_HOST, URL, null, ProviderEnum.BINARY);
         return response.getStream();
+    }
+
+    /**
+     * This method sends given message to forum. If something fails, an exception is thrown.
+     *
+     * @param session
+     * @param message
+     * @throws FLException
+     */
+    public static void sendMessage(FLSession session, FLMessage parent, String message) throws FLException {
+        /* curl
+         'http://forumbgz.ru/addpost.php?showlite='
+         Cat=
+         page=
+         sb=
+         o=
+         oldnumber=
+         fpart=
+         disc=
+         postername=my_name    <--doesn't matter
+         Reged=y                <--doesn't matter
+         convert=markup         <--most like works for moderators; fuck moderators1
+         Main=1268677
+         Parent=1328649
+         what=showflat
+         vc=1
+         replyto=Thirteen
+         src=alt
+         Subject=Re%3A+test
+         post_layer=0
+         Icon=book.gif
+         Body=102
+         postdata_protection_key=:('*/
+        try {
+            String URL = "/addpost.php?showlite=sl";
+
+            FLDataConfiguration config = getProtectionKey(session);
+
+            Map<String, String> messageData = new TreeMap<String, String>();
+            messageData.put("src", "alt");//TODO:
+            messageData.put("Main", String.valueOf(parent.getMainID()));
+            messageData.put("Parent", String.valueOf(parent.getID()));
+            messageData.put("Subject", "Subject");
+            messageData.put("Body", message);
+            messageData.put("postdata_protection_key", config.POST_PROTECTION_KEY);
+
+            HTMLResponse rdr = (HTMLResponse) ConnectionFactory.doQuery(FLOCAL_HOST, URL, session.getSessionCookies(), messageData,
+                    config.encoding, ProviderEnum.HTML);
+            System.err.print(rdr.toString());
+            System.err.print(rdr.getAll(".lighttable > td").get(0).toString());
+            return;
+        } catch (IOException e) {
+            throw new FLException("Failed to retrieve data", e.getMessage());
+        }
     }
 }
