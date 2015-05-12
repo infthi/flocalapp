@@ -42,6 +42,12 @@ android {
         versionCode getVersionCode()
         versionName "0.2." + (getVersionCode() - 68) + getBranch();
     }
+    buildTypes {
+        release {
+//            runProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
 }
 
 dependencies {

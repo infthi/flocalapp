@@ -114,6 +114,6 @@ public class BoardListActivity extends ForumActivity {
 
             }
         }
-        return super.onContextItemSelected(item);
+        return super.onOptionsItemSelected(item);
     }
 }
