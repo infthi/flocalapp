@@ -3,16 +3,11 @@ package ru.ith.android.flocal.views;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.text.Html;
-import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ImageSpan;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -25,25 +20,26 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.TreeMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.ith.android.flocal.R;
 import ru.ith.android.flocal.activities.PostListActivity;
-import ru.ith.android.flocal.engine.SessionContainer;
 import ru.ith.android.flocal.io.ImageFactory;
 import ru.ith.android.flocal.util.Settings;
-import ru.ith.lib.flocal.FLDataLoader;
+import ru.ith.android.flocal.views.util.message.ImageLoadTask;
+import ru.ith.android.flocal.views.util.message.PostPostTask;
 import ru.ith.lib.flocal.data.FLMessage;
 
 /**
  * Created by infthi on 02.08.14.
  */
 public class PostView extends FrameLayout {
+    enum CUT_CAPABILITY {UNAVAILABLE, COLLAPSED, EXPANDED}
+    private volatile CUT_CAPABILITY postCutCapability = CUT_CAPABILITY.UNAVAILABLE;
+
     private final static Executor ImageLoader = new ThreadPoolExecutor(3, 5, 5, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     private static volatile ImageFactory imageGetter;
 
@@ -68,15 +64,15 @@ public class PostView extends FrameLayout {
         postBodyView.setText(htmlSpannable);
         postBodyView.setMovementMethod(LinkMovementMethod.getInstance());
 
-        enableCutCapability();
 
         ((TextView) findViewById(R.id.postEntryAuthor)).setText(message.getAuthor());//TODO: re: may be in here too
         ((TextView) findViewById(R.id.postEntryDate)).setText(message.getDate());
 
-        initializeToolbar();
-
         new ImageLoadTask(htmlSpannable, postBodyView, imageGetter).executeOnExecutor(ImageLoader);
         imageGetter.getAvatar(message.getAuthor(), ((ImageView) findViewById(R.id.postEntryAvatar)));
+
+        initializeToolbar();
+        enableExpandCapability();
     }
 
     private void initializeToolbar() {
@@ -96,12 +92,12 @@ public class PostView extends FrameLayout {
         ((ImageButton)findViewById(R.id.button_expand)).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                toggleMinimization();
+                toggleExpansion();
             }
         });
     }
 
-    private void enableCutCapability() {
+    private void enableExpandCapability() {
         final TextView postBodyView = (TextView) findViewById(R.id.postEntryText);
         /**
          * This is one-time listener. It is run after view is initially formatted,
@@ -114,35 +110,41 @@ public class PostView extends FrameLayout {
                 postBodyView.removeOnLayoutChangeListener(this);
                 int limit = Settings.instance.getPostCutLimit();
                 if (postBodyView.getLineCount() > limit) {
-                    postCutCapability = CUT_CAPABILITY.MAXIMIZED;
+                    postCutCapability = CUT_CAPABILITY.EXPANDED;
                 } else {
                     postCutCapability = CUT_CAPABILITY.UNAVAILABLE;
                 }
-                toggleMinimization();
+                toggleExpansion();
             }
         };
         postBodyView.addOnLayoutChangeListener(listener);
     }
 
-    public synchronized void toggleMinimization(){
+    public synchronized void toggleExpansion(){
         final TextView postBodyView = (TextView) findViewById(R.id.postEntryText);
         switch (postCutCapability){
             case UNAVAILABLE:
                 ((ImageButton) findViewById(R.id.button_expand)).setEnabled(false);
                 return;
-            case MINIMIZED:
-                postCutCapability = CUT_CAPABILITY.MAXIMIZED;
+            case COLLAPSED:
+                postCutCapability = CUT_CAPABILITY.EXPANDED;
                 postBodyView.setMaxLines(Integer.MAX_VALUE);
+                ((ImageButton) findViewById(R.id.button_expand)).setEnabled(true);
                 ((ImageButton) findViewById(R.id.button_expand)).setImageResource(android.R.drawable.ic_menu_revert);
                 break;
-            case MAXIMIZED:
-                postCutCapability = CUT_CAPABILITY.MINIMIZED;
+            case EXPANDED:
+                postCutCapability = CUT_CAPABILITY.COLLAPSED;
                 postBodyView.setMaxLines(Settings.instance.getPostCutLimit());
+                ((ImageButton) findViewById(R.id.button_expand)).setEnabled(true);
                 ((ImageButton) findViewById(R.id.button_expand)).setImageResource(android.R.drawable.ic_menu_more);
                 break;
             default:
                 Log.d(VIEW_LOG_TAG, "Expand post called while post is inexpandable");
         }
+    }
+
+    public boolean isCollapsable() {
+        return postCutCapability == CUT_CAPABILITY.EXPANDED;
     }
 
     public String getMessageText() {
@@ -156,10 +158,6 @@ public class PostView extends FrameLayout {
             return "";
         return message.getURL();
     }
-
-    enum CUT_CAPABILITY {UNAVAILABLE, MINIMIZED, MAXIMIZED}
-
-    private volatile CUT_CAPABILITY postCutCapability = CUT_CAPABILITY.UNAVAILABLE;
 
     public PostView(Context context) {
         super(context);
@@ -201,125 +199,5 @@ public class PostView extends FrameLayout {
         edit.requestFocus();
         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.showSoftInput(edit, InputMethodManager.SHOW_IMPLICIT);
-    }
-
-    public boolean isMinimizable() {
-        return postCutCapability == CUT_CAPABILITY.MAXIMIZED;
-    }
-}
-
-class ImageLoadTask extends AsyncTask<Void, updateHTMLPack, Void> {
-
-    DisplayMetrics metrics = new DisplayMetrics();
-    private final SpannableStringBuilder htmlSpannable;
-    private ImageFactory mFactory;
-    private TextView htmlTextView;
-
-    ImageLoadTask(SpannableStringBuilder htmlSpannable, TextView htmlTextView, ImageFactory factory) {
-        this.htmlSpannable = htmlSpannable;
-        mFactory = factory;
-        this.htmlTextView = htmlTextView;
-    }
-
-    @Override
-    protected void onPreExecute() {
-        // we need this to properly scale the images later
-        //getWindowManager().getDefaultDisplay().getMetrics(metrics);
-    }
-
-    @Override
-    protected Void doInBackground(Void... params) {
-        // iterate over all images found in the html
-        for (final ImageSpan img : htmlSpannable.getSpans(0,
-                htmlSpannable.length(), ImageSpan.class)) {
-            Drawable d = getImageFile(img.getSource());
-            if (d == null) {
-                Log.d(FLDataLoader.FLOCAL_APP_SIGN, "Failed to load [" + img.getSource() + "]; null");
-                //TODO: Load some kinf of "failed to load" image here
-            } else {
-                d.setBounds(0, 0, (int) (d.getIntrinsicWidth() * mFactory.dpK * 1.5), (int) (d.getIntrinsicHeight() * mFactory.dpK * 1.5));
-                publishProgress(new updateHTMLPack(img, d));
-            }
-        }
-        return null;
-    }
-
-    @Override
-    protected void onProgressUpdate(updateHTMLPack... values) {
-        updateHTMLPack pk = values[0];
-        // now we create a new ImageSpan
-        ImageSpan newImg = new ImageSpan(pk.d, pk.img.getSource());
-
-        // find the position of the old ImageSpan
-        int start = htmlSpannable.getSpanStart(pk.img);
-        int end = htmlSpannable.getSpanEnd(pk.img);
-
-        // remove the old ImageSpan
-        htmlSpannable.removeSpan(pk.img);
-
-        // add the new ImageSpan
-        htmlSpannable.setSpan(newImg, start, end,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        // finally we have to update the TextView with our
-        // updates Spannable to display the image
-        htmlTextView.setText(htmlSpannable);
-    }
-
-    private TreeMap<String, Drawable> cache = new TreeMap<String, Drawable>();
-
-    private Drawable getImageFile(String src) {
-        Drawable res;
-        if ((res = cache.get(src)) == null) {
-            res = mFactory.getDrawable(src);
-            cache.put(src, res);
-        }
-        return res;
-    }
-
-}
-
-class updateHTMLPack {
-    public final ImageSpan img;
-    public final Drawable d;
-
-    updateHTMLPack(ImageSpan spanToUpdate, Drawable d) {
-        this.img = spanToUpdate;
-        this.d = d;
-    }
-}
-
-class PostPostTask extends AsyncTask<String, Void, Boolean> {
-    private final ProgressDialog progress;
-    private final Dialog reply;
-    private final FLMessage parent;
-    private volatile String problem = "Unknown problem";
-
-    public PostPostTask(ProgressDialog progress, Dialog reply, FLMessage parent) {
-        this.progress = progress;
-        this.reply = reply;
-        this.parent = parent;
-    }
-
-    @Override
-    protected Boolean doInBackground(String... params) {
-        try {
-            FLDataLoader.sendMessage(SessionContainer.getSessionInstance(), parent, params[0]);
-            return true;
-        } catch (Exception e) {
-            problem = e.getMessage();
-            return false;
-        }
-    }
-
-
-    @Override
-    protected void onPostExecute(Boolean aBoolean) {
-        super.onPostExecute(aBoolean);
-        progress.hide();
-        if (aBoolean)
-            reply.hide();
-        else
-            Toast.makeText(reply.getContext(), problem, Toast.LENGTH_SHORT).show();
     }
 }

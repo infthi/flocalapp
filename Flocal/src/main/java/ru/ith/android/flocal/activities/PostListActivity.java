@@ -102,7 +102,7 @@ public class PostListActivity extends ForumActivity {
         shareMenu.add(0, MENU_SHARE_TEXT, 0, R.string.post_option_share_text);
         shareMenu.add(0, MENU_SHARE_LINK, 1, R.string.post_option_share_link);
 
-        if (messageView.isMinimizable())
+        if (messageView.isCollapsable())
             menu.add(0, MENU_MINIMIZE_POST, 3, R.string.post_option_minimize);
     }
 
@@ -129,7 +129,7 @@ public class PostListActivity extends ForumActivity {
                 shareText(messageView.getMessageText());
                 return true;
             case MENU_MINIMIZE_POST:
-                messageView.toggleMinimization();
+                messageView.toggleExpansion();
                 return true;
         }
         return super.onContextItemSelected(item);
