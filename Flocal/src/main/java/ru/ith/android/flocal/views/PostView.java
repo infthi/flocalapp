@@ -83,7 +83,7 @@ public class PostView extends FrameLayout {
         ((ImageButton)findViewById(R.id.button_upvote)).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getContext(), "Upvote called!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Upvote not implemented yet!", Toast.LENGTH_LONG).show();
                 ((ImageButton) findViewById(R.id.button_upvote)).setImageResource(android.R.drawable.btn_star_big_on);
             }
         });
