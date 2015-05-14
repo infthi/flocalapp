@@ -10,7 +10,7 @@
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_height="wrap_content"
             android:background="@drawable/card">
 
             <ImageView
@@ -62,30 +62,40 @@
                     android:text="%message%"
                     android:textIsSelectable="false" />
 
-                <LinearLayout
-                    android:id="@+id/postEntryShowMore"
-                    android:layout_width="wrap_content"
-                    android:layout_height="fill_parent"
-                    android:layout_gravity="right"
-                    android:baselineAligned="false"
-                    android:orientation="horizontal"
-                    android:visibility="invisible">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:gravity="center_vertical"
-                        android:text="@string/show_more_label" />
-
-                    <ImageView
-                        android:id="@+id/imageView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@android:drawable/ic_menu_more" />
-                </LinearLayout>
-
             </LinearLayout>
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="3"
+            android:layout_weight="1">
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Button"
+                android:id="@+id/button_upvote"
+                android:layout_weight="1"
+                android:src="@android:drawable/btn_star_big_off" />
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/post_option_reply"
+                android:id="@+id/button_reply"
+                android:layout_weight="1"
+                android:src="@android:drawable/ic_menu_edit" />
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/post_option_expand"
+                android:id="@+id/button_expand"
+                android:layout_weight="1"
+                android:src="@android:drawable/ic_menu_more" />
         </LinearLayout>
 
     </LinearLayout>

@@ -129,7 +129,7 @@ public class PostListActivity extends ForumActivity {
                 shareText(messageView.getMessageText());
                 return true;
             case MENU_MINIMIZE_POST:
-                messageView.enableCutCapability();
+                messageView.toggleMinimization();
                 return true;
         }
         return super.onContextItemSelected(item);

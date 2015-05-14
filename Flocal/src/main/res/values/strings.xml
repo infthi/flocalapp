@@ -28,5 +28,6 @@
     <string name="post_option_minimize">Minimize</string>
     <string name="post_option_share_link">Share link</string>
     <string name="post_option_share_text">Share text</string>
+    <string name="post_option_expand">expand</string>
 
 </resources>

@@ -20,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -71,8 +72,77 @@ public class PostView extends FrameLayout {
 
         ((TextView) findViewById(R.id.postEntryAuthor)).setText(message.getAuthor());//TODO: re: may be in here too
         ((TextView) findViewById(R.id.postEntryDate)).setText(message.getDate());
+
+        initializeToolbar();
+
         new ImageLoadTask(htmlSpannable, postBodyView, imageGetter).executeOnExecutor(ImageLoader);
         imageGetter.getAvatar(message.getAuthor(), ((ImageView) findViewById(R.id.postEntryAvatar)));
+    }
+
+    private void initializeToolbar() {
+        ((ImageButton)findViewById(R.id.button_upvote)).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getContext(), "Upvote called!", Toast.LENGTH_LONG).show();
+                ((ImageButton) findViewById(R.id.button_upvote)).setImageResource(android.R.drawable.btn_star_big_on);
+            }
+        });
+        ((ImageButton)findViewById(R.id.button_reply)).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showReplyWindow();
+            }
+        });
+        ((ImageButton)findViewById(R.id.button_expand)).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                toggleMinimization();
+            }
+        });
+    }
+
+    private void enableCutCapability() {
+        final TextView postBodyView = (TextView) findViewById(R.id.postEntryText);
+        /**
+         * This is one-time listener. It is run after view is initially formatted,
+         * and checks it's size. Depending on it's size, it enables or disables
+         * 'expand/minimize' capability for the message text.
+         */
+        final View.OnLayoutChangeListener listener = new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                postBodyView.removeOnLayoutChangeListener(this);
+                int limit = Settings.instance.getPostCutLimit();
+                if (postBodyView.getLineCount() > limit) {
+                    postCutCapability = CUT_CAPABILITY.MAXIMIZED;
+                } else {
+                    postCutCapability = CUT_CAPABILITY.UNAVAILABLE;
+                }
+                toggleMinimization();
+            }
+        };
+        postBodyView.addOnLayoutChangeListener(listener);
+    }
+
+    public synchronized void toggleMinimization(){
+        final TextView postBodyView = (TextView) findViewById(R.id.postEntryText);
+        switch (postCutCapability){
+            case UNAVAILABLE:
+                ((ImageButton) findViewById(R.id.button_expand)).setEnabled(false);
+                return;
+            case MINIMIZED:
+                postCutCapability = CUT_CAPABILITY.MAXIMIZED;
+                postBodyView.setMaxLines(Integer.MAX_VALUE);
+                ((ImageButton) findViewById(R.id.button_expand)).setImageResource(android.R.drawable.ic_menu_revert);
+                break;
+            case MAXIMIZED:
+                postCutCapability = CUT_CAPABILITY.MINIMIZED;
+                postBodyView.setMaxLines(Settings.instance.getPostCutLimit());
+                ((ImageButton) findViewById(R.id.button_expand)).setImageResource(android.R.drawable.ic_menu_more);
+                break;
+            default:
+                Log.d(VIEW_LOG_TAG, "Expand post called while post is inexpandable");
+        }
     }
 
     public String getMessageText() {
@@ -90,7 +160,6 @@ public class PostView extends FrameLayout {
     enum CUT_CAPABILITY {UNAVAILABLE, MINIMIZED, MAXIMIZED}
 
     private volatile CUT_CAPABILITY postCutCapability = CUT_CAPABILITY.UNAVAILABLE;
-    private final AtomicBoolean isTextCut = new AtomicBoolean(false);
 
     public PostView(Context context) {
         super(context);
@@ -102,38 +171,6 @@ public class PostView extends FrameLayout {
 
     public PostView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-    }
-
-    public void enableCutCapability() {
-        final TextView postBodyView = (TextView) findViewById(R.id.postEntryText);
-        final View showMore = findViewById(R.id.postEntryShowMore);
-        showMore.setVisibility(View.INVISIBLE);
-        postBodyView.setMaxLines(Settings.instance.getPostCutLimit());
-        final View.OnLayoutChangeListener listener = new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                postBodyView.removeOnLayoutChangeListener(this);
-                int limit = Settings.instance.getPostCutLimit();
-                if (postBodyView.getLineCount() > limit) {
-                    postCutCapability = CUT_CAPABILITY.MINIMIZED;
-                    showMore.setVisibility(View.VISIBLE);
-                } else {
-                    postCutCapability = CUT_CAPABILITY.UNAVAILABLE;
-                    showMore.setVisibility(View.GONE);
-                }
-                showMore.postInvalidate();
-            }
-        };
-
-        showMore.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                postCutCapability = CUT_CAPABILITY.MAXIMIZED;
-                postBodyView.setMaxLines(Integer.MAX_VALUE);
-                showMore.setVisibility(View.GONE);
-            }
-        });
-        postBodyView.addOnLayoutChangeListener(listener);
     }
 
     public void showReplyWindow() {
