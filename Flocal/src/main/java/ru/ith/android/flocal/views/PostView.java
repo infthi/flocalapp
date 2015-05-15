@@ -109,7 +109,8 @@ public class PostView extends FrameLayout {
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 postBodyView.removeOnLayoutChangeListener(this);
                 int limit = Settings.instance.getPostCutLimit();
-                if (postBodyView.getLineCount() > limit) {
+                Log.d(VIEW_LOG_TAG, postBodyView.getHeight()+"/"+limit);
+                if (postBodyView.getHeight() > limit) {
                     postCutCapability = CUT_CAPABILITY.EXPANDED;
                 } else {
                     postCutCapability = CUT_CAPABILITY.UNAVAILABLE;
@@ -128,19 +129,20 @@ public class PostView extends FrameLayout {
                 return;
             case COLLAPSED:
                 postCutCapability = CUT_CAPABILITY.EXPANDED;
-                postBodyView.setMaxLines(Integer.MAX_VALUE);
+				postBodyView.setMaxHeight(Integer.MAX_VALUE);
                 ((ImageButton) findViewById(R.id.button_expand)).setEnabled(true);
                 ((ImageButton) findViewById(R.id.button_expand)).setImageResource(android.R.drawable.ic_menu_revert);
                 break;
             case EXPANDED:
                 postCutCapability = CUT_CAPABILITY.COLLAPSED;
-                postBodyView.setMaxLines(Settings.instance.getPostCutLimit());
+				postBodyView.setMaxHeight(Settings.instance.getPostCutLimit());
                 ((ImageButton) findViewById(R.id.button_expand)).setEnabled(true);
                 ((ImageButton) findViewById(R.id.button_expand)).setImageResource(android.R.drawable.ic_menu_more);
                 break;
             default:
                 Log.d(VIEW_LOG_TAG, "Expand post called while post is inexpandable");
         }
+		postBodyView.refreshDrawableState();
     }
 
     public boolean isCollapsable() {

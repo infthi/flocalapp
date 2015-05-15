@@ -7,7 +7,8 @@ public class Settings {
     public static final Settings instance = new Settings();
 
     public int getPostCutLimit() {
-        return 30;
+        //1000 pix is temporary enough. TODO: rely on screen size and DPI
+        return 1000;
     }
 
     public enum FULL_BOARD_LIST_TYPE {VISIBLE, DEFAULT, ALL}
