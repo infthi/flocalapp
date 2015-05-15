@@ -11,6 +11,8 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -39,6 +41,7 @@ import ru.ith.lib.flocal.data.FLMessage;
 public class PostView extends FrameLayout {
     enum CUT_CAPABILITY {UNAVAILABLE, COLLAPSED, EXPANDED}
     private volatile CUT_CAPABILITY postCutCapability = CUT_CAPABILITY.UNAVAILABLE;
+	private int maxPossibleHeight=0;
 
     private final static Executor ImageLoader = new ThreadPoolExecutor(3, 5, 5, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     private static volatile ImageFactory imageGetter;
@@ -90,11 +93,11 @@ public class PostView extends FrameLayout {
             }
         });
         ((ImageButton)findViewById(R.id.button_expand)).setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toggleExpansion();
-            }
-        });
+			@Override
+			public void onClick(View view) {
+				toggleExpansion();
+			}
+		});
     }
 
     private void enableExpandCapability() {
@@ -110,7 +113,9 @@ public class PostView extends FrameLayout {
                 postBodyView.removeOnLayoutChangeListener(this);
                 int limit = Settings.instance.getPostCutLimit();
                 Log.d(VIEW_LOG_TAG, postBodyView.getHeight()+"/"+limit);
-                if (postBodyView.getHeight() > limit) {
+				maxPossibleHeight = postBodyView.getHeight();
+				postBodyView.setMaxHeight(maxPossibleHeight);
+                if (maxPossibleHeight > limit) {
                     postCutCapability = CUT_CAPABILITY.EXPANDED;
                 } else {
                     postCutCapability = CUT_CAPABILITY.UNAVAILABLE;
@@ -123,26 +128,45 @@ public class PostView extends FrameLayout {
 
     public synchronized void toggleExpansion(){
         final TextView postBodyView = (TextView) findViewById(R.id.postEntryText);
+		int newMaxHeight = -1;
         switch (postCutCapability){
             case UNAVAILABLE:
                 ((ImageButton) findViewById(R.id.button_expand)).setEnabled(false);
                 return;
             case COLLAPSED:
                 postCutCapability = CUT_CAPABILITY.EXPANDED;
-				postBodyView.setMaxHeight(Integer.MAX_VALUE);
+				newMaxHeight = maxPossibleHeight;
                 ((ImageButton) findViewById(R.id.button_expand)).setEnabled(true);
                 ((ImageButton) findViewById(R.id.button_expand)).setImageResource(android.R.drawable.ic_menu_revert);
                 break;
             case EXPANDED:
                 postCutCapability = CUT_CAPABILITY.COLLAPSED;
-				postBodyView.setMaxHeight(Settings.instance.getPostCutLimit());
-                ((ImageButton) findViewById(R.id.button_expand)).setEnabled(true);
+				newMaxHeight = Settings.instance.getPostCutLimit();
+				((ImageButton) findViewById(R.id.button_expand)).setEnabled(true);
                 ((ImageButton) findViewById(R.id.button_expand)).setImageResource(android.R.drawable.ic_menu_more);
                 break;
             default:
                 Log.d(VIEW_LOG_TAG, "Expand post called while post is inexpandable");
+				return;
         }
-		postBodyView.refreshDrawableState();
+		if (newMaxHeight>-1){
+			final int startHeight = postBodyView.getMaxHeight();
+			final int newMaxHeightF = newMaxHeight;
+			Animation a = new Animation() {
+				@Override
+				protected void applyTransformation(float interpolatedTime, Transformation t) {
+					postBodyView.setMaxHeight(startHeight+(int) (interpolatedTime*(newMaxHeightF-startHeight)));
+					postBodyView.requestLayout();
+				}
+
+				@Override
+				public boolean willChangeBounds() {
+					return true;
+				}
+			};
+			a.setDuration(300);
+			postBodyView.startAnimation(a);
+		}
     }
 
     public boolean isCollapsable() {
