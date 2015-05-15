@@ -20,10 +20,10 @@ public class UploadCacheDB extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		db.execSQL("create table "+UPLOAD_TABLE+" ("
-				+ ROW_ID+" VARCHAR(20) not null unique primary key,"
-				+ ROW_CACHED_FILE+" VARCHAR(32),"
-				+ ROW_LAST_CHECKED+" integer" + ");");
+		db.execSQL("create table " + UPLOAD_TABLE + " ("
+				+ ROW_ID + " VARCHAR(20) not null unique primary key,"
+				+ ROW_CACHED_FILE + " VARCHAR(32),"
+				+ ROW_LAST_CHECKED + " integer" + ");");
 	}
 
 	@Override

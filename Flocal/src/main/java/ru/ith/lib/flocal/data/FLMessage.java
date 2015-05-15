@@ -14,7 +14,7 @@ public class FLMessage {
 	private final FLThreadHeader thread;
 
 	public FLMessage(String userName, String text, String caption, String date,
-			int rating, long ID, FLThreadHeader thread) {
+					 int rating, long ID, FLThreadHeader thread) {
 		this.userName = userName;
 		this.text = text;
 		this.caption = caption;
@@ -30,27 +30,27 @@ public class FLMessage {
 				+ rating + "]\n" + text;
 	}
 
-	public FLThreadHeader getThreadData(){
+	public FLThreadHeader getThreadData() {
 		return thread;
 	}
 
-    public long getID() {
-        return ID;
-    }
+	public long getID() {
+		return ID;
+	}
 
-    public String getPostData() {
-        return text;
-    }
+	public String getPostData() {
+		return text;
+	}
 
-    public String getAuthor() {
-        return userName;
-    }
+	public String getAuthor() {
+		return userName;
+	}
 
-    public String getDate() {
-        return date;
-    }
+	public String getDate() {
+		return date;
+	}
 
-    public String getURL() {
-        return "http://" + FLDataLoader.FLOCAL_HOST + "/showthreaded.php?Board=&Number=" + ID + "&src=";//TODO: parameters
-    }
+	public String getURL() {
+		return "http://" + FLDataLoader.FLOCAL_HOST + "/showthreaded.php?Board=&Number=" + ID + "&src=";//TODO: parameters
+	}
 }

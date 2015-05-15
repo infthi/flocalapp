@@ -13,25 +13,25 @@ import java.util.zip.ZipFile;
  */
 public class BuildData {
 
-    public static String getVersionName(Context ctxt) {
-        try {
-            return ctxt.getPackageManager().getPackageInfo(ctxt.getPackageName(), 0).versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            return "Unknown";
-        }
-    }
+	public static String getVersionName(Context ctxt) {
+		try {
+			return ctxt.getPackageManager().getPackageInfo(ctxt.getPackageName(), 0).versionName;
+		} catch (PackageManager.NameNotFoundException e) {
+			return "Unknown";
+		}
+	}
 
-    public static String getBuildDate(Context ctxt) {
-        try {
-            ApplicationInfo ai = ctxt.getPackageManager().getApplicationInfo(ctxt.getPackageName(), 0);
-            ZipFile zf = new ZipFile(ai.sourceDir);
-            ZipEntry ze = zf.getEntry("classes.dex");
-            long time = ze.getTime();
-            String s = SimpleDateFormat.getInstance().format(new java.util.Date(time));
-            zf.close();
-            return s;
-        } catch (Exception e) {
-            return "Unknown";
-        }
-    }
+	public static String getBuildDate(Context ctxt) {
+		try {
+			ApplicationInfo ai = ctxt.getPackageManager().getApplicationInfo(ctxt.getPackageName(), 0);
+			ZipFile zf = new ZipFile(ai.sourceDir);
+			ZipEntry ze = zf.getEntry("classes.dex");
+			long time = ze.getTime();
+			String s = SimpleDateFormat.getInstance().format(new java.util.Date(time));
+			zf.close();
+			return s;
+		} catch (Exception e) {
+			return "Unknown";
+		}
+	}
 }

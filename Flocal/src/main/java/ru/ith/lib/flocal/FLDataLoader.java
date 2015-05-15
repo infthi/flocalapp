@@ -30,483 +30,483 @@ import ru.ith.lib.webcrawl.providers.ProviderEnum;
  * Created by infthi on 6/26/13.
  */
 public class FLDataLoader {
-    public static final String FLOCAL_HOST = "forumbgz.ru";
-    public static final String FLOCAL_APP_SIGN = "forum-local";
+	public static final String FLOCAL_HOST = "forumbgz.ru";
+	public static final String FLOCAL_APP_SIGN = "forum-local";
 
-    private static FLDataConfiguration getProtectionKey(FLSession session) throws FLException {
-        HTMLResponse rdr = null;
-        try {
-            rdr = doQuery("/login.php?showlite=sl", session);
-            Elements postKeyElement = rdr.getAll("input[name=postdata_protection_key]");
-            if (postKeyElement.isEmpty())
-                throw new FLException("Malformed server responce",
-                        "no postdata_protection_key");
-            return new FLDataConfiguration(postKeyElement.get(0).attr("value"), rdr.metaData.getEncoding());
-        } catch (IOException e) {
-            throw new FLException("Failed to сщььгтшсфеу", e.getMessage());
-        }
-    }
+	private static FLDataConfiguration getProtectionKey(FLSession session) throws FLException {
+		HTMLResponse rdr = null;
+		try {
+			rdr = doQuery("/login.php?showlite=sl", session);
+			Elements postKeyElement = rdr.getAll("input[name=postdata_protection_key]");
+			if (postKeyElement.isEmpty())
+				throw new FLException("Malformed server responce",
+						"no postdata_protection_key");
+			return new FLDataConfiguration(postKeyElement.get(0).attr("value"), rdr.metaData.getEncoding());
+		} catch (IOException e) {
+			throw new FLException("Failed to сщььгтшсфеу", e.getMessage());
+		}
+	}
 
-    public static final String generateLoginData(String login, String password)
-            throws FLException {
-        try {
-            FLDataConfiguration config = getProtectionKey(null);
+	public static final String generateLoginData(String login, String password)
+			throws FLException {
+		try {
+			FLDataConfiguration config = getProtectionKey(null);
 
-            Map<String, String> loginData = new TreeMap<String, String>();
-            loginData.put("Loginname", login);
-            loginData.put("Loginpass", password);
-            loginData.put("rememberme", "1");
-            loginData.put("firstlogin", "1");
-            loginData.put("ipbind", "0");
-            loginData.put("postdata_protection_key", config.POST_PROTECTION_KEY);
-            loginData.put("buttlogin", "1");
+			Map<String, String> loginData = new TreeMap<String, String>();
+			loginData.put("Loginname", login);
+			loginData.put("Loginpass", password);
+			loginData.put("rememberme", "1");
+			loginData.put("firstlogin", "1");
+			loginData.put("ipbind", "0");
+			loginData.put("postdata_protection_key", config.POST_PROTECTION_KEY);
+			loginData.put("buttlogin", "1");
 
-            HTMLResponse rdr = (HTMLResponse) ConnectionFactory.doQuery(FLOCAL_HOST,
-                    "/start_page.php?showlite=sl", null, loginData,
-                    config.encoding, ProviderEnum.HTML);
-            String mysess = rdr.metaData.getCookie("w3t_w3t_mysess");
-            String key = rdr.metaData.getCookie("w3t_w3t_key");
-            String myID = rdr.metaData.getCookie("w3t_w3t_myid");
-            if ((key == null) || (mysess == null) || (myID == null)) {
-                throw new FLException("Failed to login",
-                        "server returned no session cookies");
-            }
-            return key + ":" + mysess + ":" + myID;
-        } catch (IOException e) {
-            throw new FLException("Failed to login", e.getMessage());
-        }
-    }
+			HTMLResponse rdr = (HTMLResponse) ConnectionFactory.doQuery(FLOCAL_HOST,
+					"/start_page.php?showlite=sl", null, loginData,
+					config.encoding, ProviderEnum.HTML);
+			String mysess = rdr.metaData.getCookie("w3t_w3t_mysess");
+			String key = rdr.metaData.getCookie("w3t_w3t_key");
+			String myID = rdr.metaData.getCookie("w3t_w3t_myid");
+			if ((key == null) || (mysess == null) || (myID == null)) {
+				throw new FLException("Failed to login",
+						"server returned no session cookies");
+			}
+			return key + ":" + mysess + ":" + myID;
+		} catch (IOException e) {
+			throw new FLException("Failed to login", e.getMessage());
+		}
+	}
 
-    private static HTMLResponse doQuery(String url, FLSession session) throws IOException {
-        return (HTMLResponse) ConnectionFactory.doQuery(FLOCAL_HOST, url,
-                (session == null) ? null : session.getSessionCookies(), ProviderEnum.HTML);
-    }
+	private static HTMLResponse doQuery(String url, FLSession session) throws IOException {
+		return (HTMLResponse) ConnectionFactory.doQuery(FLOCAL_HOST, url,
+				(session == null) ? null : session.getSessionCookies(), ProviderEnum.HTML);
+	}
 
-    public static void logout(FLSession session) throws FLException {
-        if (session.isAnonymous())
-            return;
-        try {
-            HTMLResponse keyPage = doQuery("/logout.php?showlite=sl", session);
-            Elements logoutLinkSet = keyPage.getAll("td i a[href]");
-            if (!logoutLinkSet.isEmpty()) {
-                String logoutLink = logoutLinkSet.first().attr("href");
-                int index = logoutLink.indexOf("key=");
-                if (index > 0) {
-                    index += 4;
-                    int endIndex = logoutLink.indexOf('&', index);
-                    if (endIndex > 0)
-                        logoutLink = logoutLink.substring(index, endIndex);
-                    else
-                        logoutLink = logoutLink.substring(index);
-                    HTMLResponse clean = doQuery("/logout.php?key=" + logoutLink, session);
-                    return;
-                }
-            }
-            throw new FLException("server error", "Failed to retrieve logout key");
-        } catch (IOException e) {
-            throw new FLException("Failed to connect to server", e.getMessage());
-        }
-    }
+	public static void logout(FLSession session) throws FLException {
+		if (session.isAnonymous())
+			return;
+		try {
+			HTMLResponse keyPage = doQuery("/logout.php?showlite=sl", session);
+			Elements logoutLinkSet = keyPage.getAll("td i a[href]");
+			if (!logoutLinkSet.isEmpty()) {
+				String logoutLink = logoutLinkSet.first().attr("href");
+				int index = logoutLink.indexOf("key=");
+				if (index > 0) {
+					index += 4;
+					int endIndex = logoutLink.indexOf('&', index);
+					if (endIndex > 0)
+						logoutLink = logoutLink.substring(index, endIndex);
+					else
+						logoutLink = logoutLink.substring(index);
+					HTMLResponse clean = doQuery("/logout.php?key=" + logoutLink, session);
+					return;
+				}
+			}
+			throw new FLException("server error", "Failed to retrieve logout key");
+		} catch (IOException e) {
+			throw new FLException("Failed to connect to server", e.getMessage());
+		}
+	}
 
-    public static LinkedList<FLBoard> listBoards(FLSession session) throws FLException {
-        LinkedList<FLBoard> result = new LinkedList<FLBoard>();
-        try {
-            HTMLResponse mainPage = doQuery("/ubbthreads.php?showlite=sl", session);
-            for (Element e : mainPage.getAll("a[href*=postlist.php]")) {
-                boolean hasUnread = false;
-                if (e.previousSibling().nodeName().startsWith("#")) {// #text:
-                    // (*)
-                    hasUnread = true;
-                }
-                Node textNode = e.childNode(0);
-                if (textNode instanceof TextNode) {
-                    String name, URIName;
-                    name = ((TextNode) textNode).text();
-                    String link = e.attr("href");
+	public static LinkedList<FLBoard> listBoards(FLSession session) throws FLException {
+		LinkedList<FLBoard> result = new LinkedList<FLBoard>();
+		try {
+			HTMLResponse mainPage = doQuery("/ubbthreads.php?showlite=sl", session);
+			for (Element e : mainPage.getAll("a[href*=postlist.php]")) {
+				boolean hasUnread = false;
+				if (e.previousSibling().nodeName().startsWith("#")) {// #text:
+					// (*)
+					hasUnread = true;
+				}
+				Node textNode = e.childNode(0);
+				if (textNode instanceof TextNode) {
+					String name, URIName;
+					name = ((TextNode) textNode).text();
+					String link = e.attr("href");
 
-                    final String src;
-                    int srcBeginning = link.indexOf("src=");
-                    if (srcBeginning >= 0) {
-                        srcBeginning += 4;
-                        int ending = link.indexOf('&', srcBeginning);
-                        if (ending >= 0)
-                            src = link.substring(srcBeginning, ending);
-                        else
-                            src = link.substring(srcBeginning);
-                    } else
-                        src = null;
+					final String src;
+					int srcBeginning = link.indexOf("src=");
+					if (srcBeginning >= 0) {
+						srcBeginning += 4;
+						int ending = link.indexOf('&', srcBeginning);
+						if (ending >= 0)
+							src = link.substring(srcBeginning, ending);
+						else
+							src = link.substring(srcBeginning);
+					} else
+						src = null;
 
-                    int beginning = link.indexOf("Board=");
-                    if (beginning >= 0) {
-                        beginning += 6;
-                        int ending = link.indexOf('&', beginning);
-                        if (ending >= 0)
-                            URIName = link.substring(beginning, ending);
-                        else
-                            URIName = link.substring(beginning);
-                        FLBoard board = new FLBoard(name, URIName, hasUnread, src);
-                        result.add(board);
-                    }
-                }
-            }
-            return result;
-        } catch (IOException e) {
-            throw new FLException("Failed to retrieve data", e.getMessage(), e);
-        }
-    }
+					int beginning = link.indexOf("Board=");
+					if (beginning >= 0) {
+						beginning += 6;
+						int ending = link.indexOf('&', beginning);
+						if (ending >= 0)
+							URIName = link.substring(beginning, ending);
+						else
+							URIName = link.substring(beginning);
+						FLBoard board = new FLBoard(name, URIName, hasUnread, src);
+						result.add(board);
+					}
+				}
+			}
+			return result;
+		} catch (IOException e) {
+			throw new FLException("Failed to retrieve data", e.getMessage(), e);
+		}
+	}
 
-    public static LinkedList<FLThreadHeader> listThreads(FLSession session, FLBoard board, int page)
-            throws FLException {
-        //TODO: add some structure which will contain data on next page availability
-        LinkedList<FLThreadHeader> result = new LinkedList<FLThreadHeader>();
-        try {
-            HTMLResponse mainPage = doQuery("/postlist.php?Board="
-                    + board.boardURIName + "&sb=5&showlite=sl&page=" + page + ((board.src == null) ? "" : ("&src=" + board.src)), session);
-            for (Element e : mainPage.getAll("a[href*=showflat.php]")) {
-                int numUnread, numUnreadDisc = 0;
-                boolean isPinned = false;
-                String name = "", author;
-                String id;
+	public static LinkedList<FLThreadHeader> listThreads(FLSession session, FLBoard board, int page)
+			throws FLException {
+		//TODO: add some structure which will contain data on next page availability
+		LinkedList<FLThreadHeader> result = new LinkedList<FLThreadHeader>();
+		try {
+			HTMLResponse mainPage = doQuery("/postlist.php?Board="
+					+ board.boardURIName + "&sb=5&showlite=sl&page=" + page + ((board.src == null) ? "" : ("&src=" + board.src)), session);
+			for (Element e : mainPage.getAll("a[href*=showflat.php]")) {
+				int numUnread, numUnreadDisc = 0;
+				boolean isPinned = false;
+				String name = "", author;
+				String id;
 
-                Node unreadNode = e.previousSibling();
-                if (unreadNode instanceof TextNode) {
-                    String unreadText = ((TextNode) unreadNode).text();
-                    if (unreadText.endsWith("["))
-                        continue;
-                    else if (unreadText.startsWith("]")) {
-                        Node unreadDiscussion = unreadNode.previousSibling();
-                        String unreadDiscString = ((TextNode) (unreadDiscussion.childNode(0))).text();
-                        try {
-                            numUnreadDisc = Integer.valueOf(unreadDiscString);
-                        } catch (NumberFormatException ex) {
-                            //TODO: log
-                            continue;
-                        }
-                        unreadText = ((TextNode) unreadDiscussion.previousSibling()).text();
-                    }
+				Node unreadNode = e.previousSibling();
+				if (unreadNode instanceof TextNode) {
+					String unreadText = ((TextNode) unreadNode).text();
+					if (unreadText.endsWith("["))
+						continue;
+					else if (unreadText.startsWith("]")) {
+						Node unreadDiscussion = unreadNode.previousSibling();
+						String unreadDiscString = ((TextNode) (unreadDiscussion.childNode(0))).text();
+						try {
+							numUnreadDisc = Integer.valueOf(unreadDiscString);
+						} catch (NumberFormatException ex) {
+							//TODO: log
+							continue;
+						}
+						unreadText = ((TextNode) unreadDiscussion.previousSibling()).text();
+					}
 
-                    if (unreadText.startsWith("(")) {
-                        try {
-                            numUnread = Integer.valueOf(unreadText.substring(1,
-                                    unreadText.length() - 2));
-                        } catch (NumberFormatException ex) {
-                            //TODO: log
-                            continue;
-                        }
-                    } else
-                        numUnread = 0;
-                } else
-                    continue;
+					if (unreadText.startsWith("(")) {
+						try {
+							numUnread = Integer.valueOf(unreadText.substring(1,
+									unreadText.length() - 2));
+						} catch (NumberFormatException ex) {
+							//TODO: log
+							continue;
+						}
+					} else
+						numUnread = 0;
+				} else
+					continue;
 
-                if (e.childNodes().isEmpty())
-                    continue;
-                Node nameNode = e.childNode(0);
-                if (nameNode.nodeName().equals("img")) {
-                    isPinned = true;
-                    nameNode = nameNode.nextSibling();
-                }
-                if (nameNode instanceof TextNode) {
-                    name = ((TextNode) nameNode).text();
-                } else
-                    continue;
+				if (e.childNodes().isEmpty())
+					continue;
+				Node nameNode = e.childNode(0);
+				if (nameNode.nodeName().equals("img")) {
+					isPinned = true;
+					nameNode = nameNode.nextSibling();
+				}
+				if (nameNode instanceof TextNode) {
+					name = ((TextNode) nameNode).text();
+				} else
+					continue;
 
-                Node authorNode = e.nextSibling();
-                if (authorNode instanceof TextNode) {
-                    author = ((TextNode) authorNode).text();
-                    if (author.length() < 3)
-                        continue;
-                    author = author.substring(2, author.length() - 1);
-                } else
-                    continue;
+				Node authorNode = e.nextSibling();
+				if (authorNode instanceof TextNode) {
+					author = ((TextNode) authorNode).text();
+					if (author.length() < 3)
+						continue;
+					author = author.substring(2, author.length() - 1);
+				} else
+					continue;
 
-                String link = e.attr("href");
-                int beginning = link.indexOf("Number=");
-                if (beginning >= 0) {
-                    beginning += 7;
-                    int ending = link.indexOf('&', beginning);
-                    if (ending >= 0)
-                        id = link.substring(beginning, ending);
-                    else
-                        id = link.substring(beginning);
+				String link = e.attr("href");
+				int beginning = link.indexOf("Number=");
+				if (beginning >= 0) {
+					beginning += 7;
+					int ending = link.indexOf('&', beginning);
+					if (ending >= 0)
+						id = link.substring(beginning, ending);
+					else
+						id = link.substring(beginning);
 
-                    //in sl-mode, number points to first unread post if we have any unread posts. otherwise it points to first post.
+					//in sl-mode, number points to first unread post if we have any unread posts. otherwise it points to first post.
 
-                    final int first, firstUnread;
-                    if (numUnread > 0) {
-                        first = -1;
-                        firstUnread = Integer.valueOf(id);
-                    } else {
-                        first = Integer.valueOf(id);
-                        firstUnread = -1;
-                    }
+					final int first, firstUnread;
+					if (numUnread > 0) {
+						first = -1;
+						firstUnread = Integer.valueOf(id);
+					} else {
+						first = Integer.valueOf(id);
+						firstUnread = -1;
+					}
 
-                    FLThreadHeader thread = new FLThreadHeader(name, author, numUnread, numUnreadDisc,
-                            first, firstUnread, isPinned, board.src);
-                    result.add(thread);
-                }
-            }
-            return result;
-        } catch (IOException e) {
-            throw new FLException("Failed to retrieve data", e.getMessage());
-        }
-    }
+					FLThreadHeader thread = new FLThreadHeader(name, author, numUnread, numUnreadDisc,
+							first, firstUnread, isPinned, board.src);
+					result.add(thread);
+				}
+			}
+			return result;
+		} catch (IOException e) {
+			throw new FLException("Failed to retrieve data", e.getMessage());
+		}
+	}
 
-    public static FLThreadPageSet parseHeader(HTMLResponse mainPage) throws IOException {
-        int threadOffset = 0;
-        boolean forumBug = false;
-        boolean hasMorePages = false;
+	public static FLThreadPageSet parseHeader(HTMLResponse mainPage) throws IOException {
+		int threadOffset = 0;
+		boolean forumBug = false;
+		boolean hasMorePages = false;
 
-        boolean thisElementIsStaticCounter = false;
-        boolean prevElementWasStaticCounter = false;
-        for (Element threadHeaderElement : mainPage.getAll("table > tbody> tr > td > a + br + br")) {
-            //possible values:
-            //Страницы: 1
-            //Страницы: ^1^ | (1)
-            //Страницы: ^0^ | ^20^ | (35) | ^40^ | ^показать все^
-            //Страницы: ^0^ | ^20^ | ^40^ | (45) | ^показать все^
-            //Страницы: ^0^ | 20 | ^40^ | ^показать все^ | ^след. страница^
+		boolean thisElementIsStaticCounter = false;
+		boolean prevElementWasStaticCounter = false;
+		for (Element threadHeaderElement : mainPage.getAll("table > tbody> tr > td > a + br + br")) {
+			//possible values:
+			//Страницы: 1
+			//Страницы: ^1^ | (1)
+			//Страницы: ^0^ | ^20^ | (35) | ^40^ | ^показать все^
+			//Страницы: ^0^ | ^20^ | ^40^ | (45) | ^показать все^
+			//Страницы: ^0^ | 20 | ^40^ | ^показать все^ | ^след. страница^
 
-            Node pageNavigationElement = threadHeaderElement.nextSibling(); //Pages:
-            while (pageNavigationElement != null) {
-                if (pageNavigationElement instanceof TextNode) {
-                    //bug-related: | after fake "0"
-                    String headerText = ((TextNode) pageNavigationElement).text().replaceAll(" ", "");
-                    if (headerText.indexOf(':') >= 0)
-                        if (headerText.endsWith("|") && (!headerText.endsWith(":|"))) {
-                            thisElementIsStaticCounter = true;
-                            threadOffset = 0;
-                        }
-                    if ((headerText.length() > 1) && headerText.startsWith("|")) {
-                        int extraFwd = 1;
-                        int extraBkwd = headerText.endsWith("|") ? 1 : 0;
-                        if (headerText.charAt(1) == '(') {
-                            extraFwd++;
-                            extraBkwd++;
-                        }
-                        headerText = headerText.substring(extraFwd, headerText.length() - extraBkwd);
-                        if (!headerText.contains(".")) {
-                            threadOffset = Integer.valueOf(headerText);
-                            thisElementIsStaticCounter = true;
-                        }
-                    }
-                } else if (pageNavigationElement.nodeName().equals("a")) {
-                    String href = pageNavigationElement.attr("href");
-                    String tistart = extractParam(href, "tistart");
-                    if (tistart != null)
-                        if (!tistart.equals("all")) {
-                            if (prevElementWasStaticCounter)
-                                hasMorePages = true;
-                            if (tistart.equals("0")) {
-                                //bug: if request tistart==thread_size+1, we get
-                                // first page of thread, but header displays
-                                // our effective offset as this wrong tistart.
-                                // it's forum's bug
+			Node pageNavigationElement = threadHeaderElement.nextSibling(); //Pages:
+			while (pageNavigationElement != null) {
+				if (pageNavigationElement instanceof TextNode) {
+					//bug-related: | after fake "0"
+					String headerText = ((TextNode) pageNavigationElement).text().replaceAll(" ", "");
+					if (headerText.indexOf(':') >= 0)
+						if (headerText.endsWith("|") && (!headerText.endsWith(":|"))) {
+							thisElementIsStaticCounter = true;
+							threadOffset = 0;
+						}
+					if ((headerText.length() > 1) && headerText.startsWith("|")) {
+						int extraFwd = 1;
+						int extraBkwd = headerText.endsWith("|") ? 1 : 0;
+						if (headerText.charAt(1) == '(') {
+							extraFwd++;
+							extraBkwd++;
+						}
+						headerText = headerText.substring(extraFwd, headerText.length() - extraBkwd);
+						if (!headerText.contains(".")) {
+							threadOffset = Integer.valueOf(headerText);
+							thisElementIsStaticCounter = true;
+						}
+					}
+				} else if (pageNavigationElement.nodeName().equals("a")) {
+					String href = pageNavigationElement.attr("href");
+					String tistart = extractParam(href, "tistart");
+					if (tistart != null)
+						if (!tistart.equals("all")) {
+							if (prevElementWasStaticCounter)
+								hasMorePages = true;
+							if (tistart.equals("0")) {
+								//bug: if request tistart==thread_size+1, we get
+								// first page of thread, but header displays
+								// our effective offset as this wrong tistart.
+								// it's forum's bug
 
-                                Elements postLinks = mainPage.getAll("tr>td>a[name]:not([href])");
-                                if (!postLinks.isEmpty()) {
-                                    Element first = postLinks.first();
-                                    String postID = first.attr("name");
-                                    if (postID.length() > 4) {
-                                        String firstPageID = extractParam(href, "Number");
-                                        if (firstPageID != null)
-                                            if (firstPageID.equals(postID.substring(4))) {
-                                                forumBug = true;
-                                                thisElementIsStaticCounter = true;
-                                            }
-                                    }
-                                }
-                            }
-                        }
-                }
-                prevElementWasStaticCounter = thisElementIsStaticCounter;
-                pageNavigationElement = pageNavigationElement.nextSibling();
-            }
-            break;
-        }
-        return new FLThreadPageSet(forumBug ? 0 : threadOffset, hasMorePages);
-    }
+								Elements postLinks = mainPage.getAll("tr>td>a[name]:not([href])");
+								if (!postLinks.isEmpty()) {
+									Element first = postLinks.first();
+									String postID = first.attr("name");
+									if (postID.length() > 4) {
+										String firstPageID = extractParam(href, "Number");
+										if (firstPageID != null)
+											if (firstPageID.equals(postID.substring(4))) {
+												forumBug = true;
+												thisElementIsStaticCounter = true;
+											}
+									}
+								}
+							}
+						}
+				}
+				prevElementWasStaticCounter = thisElementIsStaticCounter;
+				pageNavigationElement = pageNavigationElement.nextSibling();
+			}
+			break;
+		}
+		return new FLThreadPageSet(forumBug ? 0 : threadOffset, hasMorePages);
+	}
 
-    private static String extractParam(String from, String what) {
-        int tiStartIndex = from.indexOf(what + "=");
-        if (tiStartIndex >= 0) {
-            tiStartIndex += what.length() + 1;
-            int tiStartEnd = from.indexOf("&", tiStartIndex);
-            if (tiStartEnd >= 0)
-                return from.substring(tiStartIndex, tiStartEnd);
-            else
-                return from.substring(tiStartIndex);
-        }
-        return null;
-    }
+	private static String extractParam(String from, String what) {
+		int tiStartIndex = from.indexOf(what + "=");
+		if (tiStartIndex >= 0) {
+			tiStartIndex += what.length() + 1;
+			int tiStartEnd = from.indexOf("&", tiStartIndex);
+			if (tiStartEnd >= 0)
+				return from.substring(tiStartIndex, tiStartEnd);
+			else
+				return from.substring(tiStartIndex);
+		}
+		return null;
+	}
 
-    public static FLMessageSet listMessages(FLSession session, FLThreadHeader thread, int skip)
-            throws FLException {
-        LinkedList<FLMessage> result = new LinkedList<FLMessage>();
-        try {
-            long loadID = thread.getID();
+	public static FLMessageSet listMessages(FLSession session, FLThreadHeader thread, int skip)
+			throws FLException {
+		LinkedList<FLMessage> result = new LinkedList<FLMessage>();
+		try {
+			long loadID = thread.getID();
 
-            if (loadID < 0)
-                loadID = thread.getUnreadID();
-            String URL = "/showflat.php?showlite=l&Number=" + loadID
-                    + ((skip >= 0) ? ("&tistart=" + skip) : "")
-                    + ((thread.src == null) ? "" : ("&src=" + thread.src));
-            HTMLResponse mainPage = doQuery(URL, session);
+			if (loadID < 0)
+				loadID = thread.getUnreadID();
+			String URL = "/showflat.php?showlite=l&Number=" + loadID
+					+ ((skip >= 0) ? ("&tistart=" + skip) : "")
+					+ ((thread.src == null) ? "" : ("&src=" + thread.src));
+			HTMLResponse mainPage = doQuery(URL, session);
 
-            FLThreadPageSet header = parseHeader(mainPage);
-
-
-            for (Element messageHeaderElement : mainPage
-                    .getAll("td.subjecttable:not([style])")) {
-                String userName, caption, postDate;
-                int rating = 0;
-                long messageID;
-                StringBuilder postHtml = new StringBuilder();
-
-                Node linkNode = messageHeaderElement.childNode(0);
-                if (linkNode.nodeName().equalsIgnoreCase("a")) {
-                    messageID = Long.valueOf(linkNode.attr("name").substring(4));
-                } else
-                    continue;
-
-                Node nickNode = linkNode.nextSibling();
-                if (nickNode instanceof TextNode) {
-                    // TODO: process layer
-                    nickNode = nickNode.nextSibling();
-                }
-                if (nickNode.nodeName().equalsIgnoreCase("b")) {
-                    userName = ((TextNode) nickNode.childNode(0)).text();
-                } else
-                    continue;
-
-                Node captionNodeWrapper = nickNode.nextSibling().nextSibling();
-                if (captionNodeWrapper.childNodeSize() > 0) {
-                    Node captionNode = captionNodeWrapper.childNode(0);
-                    if (captionNode instanceof TextNode)
-                        caption = ((TextNode) captionNode).text().substring(2);
-                    else
-                        continue;
-                } else {
-                    caption = "";
-                }
-
-                Node dateContainer = captionNodeWrapper.siblingNodes().get(
-                        captionNodeWrapper.siblingNodes().size() - 1);
-                if (dateContainer.childNodeSize() == 0)
-                    continue;
-                Node dateNode = dateContainer.childNode(0);
-                if (dateNode instanceof TextNode) {
-                    postDate = ((TextNode) dateNode).text();
-                    int dateEndIndex = postDate.indexOf('\u00a0');// nbsp;
-                    if (dateEndIndex > 0)
-                        postDate = postDate.substring(0, dateEndIndex);
-                } else
-                    continue;
-
-                Element ratingNodeContainer = messageHeaderElement
-                        .nextElementSibling();
-                if (ratingNodeContainer.childNodeSize() > 0) {
-                    Node ratingNodeSpan = ratingNodeContainer.childNode(0);
-                    final Node ratingNode;
-                    if (ratingNodeSpan.childNodeSize() > 0) {
-                        ratingNode = ratingNodeSpan.childNode(0);
-                    } else
-                        ratingNode = ratingNodeSpan; //anonymous see only text; without buttons
-                    if (ratingNode instanceof TextNode)
-                        rating = Integer.valueOf(((TextNode) ratingNode)
-                                .text());
-                    else
-                        continue;
-                } else
-                    continue;
-
-                Element textContainer = messageHeaderElement.parent()
-                        .nextElementSibling();
-                if (textContainer.children().size() > 0) {
-                    Element textElement = textContainer.child(0);
-                    List<Node> children = textElement.childNodes();
-                    for (int i = children.size() - 1; i >= 0; i--) {
-                        Node lastNode = children.get(i);
-                        if (lastNode.nodeName().equals("br"))
-                            lastNode.remove();
-                        else
-                            break;
-                    }
-                    postHtml.append(generatePostHTML(textElement));
-                } else
-                    continue;
-
-                FLMessage message = new FLMessage(userName,
-                        postHtml.toString(), caption, postDate, rating, messageID, thread);
-                result.add(message);
-            }
+			FLThreadPageSet header = parseHeader(mainPage);
 
 
-            FLMessageSet resultSet = new FLMessageSet(thread, result, header);
-            resultSet.URL = URL;
-            return resultSet;
-        } catch (IOException e) {
-            throw new FLException("Failed to retrieve data", e.getMessage());
-        }
-    }
+			for (Element messageHeaderElement : mainPage
+					.getAll("td.subjecttable:not([style])")) {
+				String userName, caption, postDate;
+				int rating = 0;
+				long messageID;
+				StringBuilder postHtml = new StringBuilder();
 
-    private static String generatePostHTML(Element elt) {
-        for (Element link : elt.select("a")) {
-            if (link.attr("href").startsWith("/")) {
-                link.attr("href", "http://" + FLOCAL_HOST + link.attr("href"));
+				Node linkNode = messageHeaderElement.childNode(0);
+				if (linkNode.nodeName().equalsIgnoreCase("a")) {
+					messageID = Long.valueOf(linkNode.attr("name").substring(4));
+				} else
+					continue;
+
+				Node nickNode = linkNode.nextSibling();
+				if (nickNode instanceof TextNode) {
+					// TODO: process layer
+					nickNode = nickNode.nextSibling();
+				}
+				if (nickNode.nodeName().equalsIgnoreCase("b")) {
+					userName = ((TextNode) nickNode.childNode(0)).text();
+				} else
+					continue;
+
+				Node captionNodeWrapper = nickNode.nextSibling().nextSibling();
+				if (captionNodeWrapper.childNodeSize() > 0) {
+					Node captionNode = captionNodeWrapper.childNode(0);
+					if (captionNode instanceof TextNode)
+						caption = ((TextNode) captionNode).text().substring(2);
+					else
+						continue;
+				} else {
+					caption = "";
+				}
+
+				Node dateContainer = captionNodeWrapper.siblingNodes().get(
+						captionNodeWrapper.siblingNodes().size() - 1);
+				if (dateContainer.childNodeSize() == 0)
+					continue;
+				Node dateNode = dateContainer.childNode(0);
+				if (dateNode instanceof TextNode) {
+					postDate = ((TextNode) dateNode).text();
+					int dateEndIndex = postDate.indexOf('\u00a0');// nbsp;
+					if (dateEndIndex > 0)
+						postDate = postDate.substring(0, dateEndIndex);
+				} else
+					continue;
+
+				Element ratingNodeContainer = messageHeaderElement
+						.nextElementSibling();
+				if (ratingNodeContainer.childNodeSize() > 0) {
+					Node ratingNodeSpan = ratingNodeContainer.childNode(0);
+					final Node ratingNode;
+					if (ratingNodeSpan.childNodeSize() > 0) {
+						ratingNode = ratingNodeSpan.childNode(0);
+					} else
+						ratingNode = ratingNodeSpan; //anonymous see only text; without buttons
+					if (ratingNode instanceof TextNode)
+						rating = Integer.valueOf(((TextNode) ratingNode)
+								.text());
+					else
+						continue;
+				} else
+					continue;
+
+				Element textContainer = messageHeaderElement.parent()
+						.nextElementSibling();
+				if (textContainer.children().size() > 0) {
+					Element textElement = textContainer.child(0);
+					List<Node> children = textElement.childNodes();
+					for (int i = children.size() - 1; i >= 0; i--) {
+						Node lastNode = children.get(i);
+						if (lastNode.nodeName().equals("br"))
+							lastNode.remove();
+						else
+							break;
+					}
+					postHtml.append(generatePostHTML(textElement));
+				} else
+					continue;
+
+				FLMessage message = new FLMessage(userName,
+						postHtml.toString(), caption, postDate, rating, messageID, thread);
+				result.add(message);
+			}
+
+
+			FLMessageSet resultSet = new FLMessageSet(thread, result, header);
+			resultSet.URL = URL;
+			return resultSet;
+		} catch (IOException e) {
+			throw new FLException("Failed to retrieve data", e.getMessage());
+		}
+	}
+
+	private static String generatePostHTML(Element elt) {
+		for (Element link : elt.select("a")) {
+			if (link.attr("href").startsWith("/")) {
+				link.attr("href", "http://" + FLOCAL_HOST + link.attr("href"));
 /*                List<Node> children = link.childNodes();
-                if (children.size() == 1) {
+				if (children.size() == 1) {
                     Node possibleTextNode = children.get(0);
                     if (possibleTextNode instanceof TextNode)
                         ((TextNode) possibleTextNode).text("---");
                 }*/
-            }
-        }
-        return elt.html();
-    }
+			}
+		}
+		return elt.html();
+	}
 
-    public static AvatarMetaData getAvatarMetadata(FLSession session, String user, boolean onlyURL) throws FLException {
-        try {
-            String URL = "/showprofile.php?showlite=sl&User=" + user;
-            HTMLResponse mainPage = doQuery(URL, session);
+	public static AvatarMetaData getAvatarMetadata(FLSession session, String user, boolean onlyURL) throws FLException {
+		try {
+			String URL = "/showprofile.php?showlite=sl&User=" + user;
+			HTMLResponse mainPage = doQuery(URL, session);
 
-            String imgURL = null;
-            long lastUpdated = -1;
-            for (Element img : mainPage.getAll("td > img[alt]")) {
-                imgURL = img.attr("src");
-                if (imgURL.endsWith("nopicture.gif"))
-                    imgURL = null;
-                break;
-            }
-            if (!onlyURL) {
-                //fetch last-updated
-                HEADResponse metaData = (HEADResponse) ConnectionFactory.doQuery(FLOCAL_HOST, imgURL, null, ProviderEnum.HEAD);
-                lastUpdated = metaData.metaData.getLastModified();
-            }
-            return new AvatarMetaData(imgURL, lastUpdated);
-        } catch (IOException e) {
-            throw new FLException("Failed to retrieve data", e.getMessage());
-        }
-    }
+			String imgURL = null;
+			long lastUpdated = -1;
+			for (Element img : mainPage.getAll("td > img[alt]")) {
+				imgURL = img.attr("src");
+				if (imgURL.endsWith("nopicture.gif"))
+					imgURL = null;
+				break;
+			}
+			if (!onlyURL) {
+				//fetch last-updated
+				HEADResponse metaData = (HEADResponse) ConnectionFactory.doQuery(FLOCAL_HOST, imgURL, null, ProviderEnum.HEAD);
+				lastUpdated = metaData.metaData.getLastModified();
+			}
+			return new AvatarMetaData(imgURL, lastUpdated);
+		} catch (IOException e) {
+			throw new FLException("Failed to retrieve data", e.getMessage());
+		}
+	}
 
-    public static InputStream fetchAvatar(AvatarMetaData meta) throws IOException {
-        return fetchFile(meta.URL);
-    }
+	public static InputStream fetchAvatar(AvatarMetaData meta) throws IOException {
+		return fetchFile(meta.URL);
+	}
 
-    public static InputStream fetchFile(String URL) throws IOException {
-        BinaryResponse response = (BinaryResponse) ConnectionFactory.doQuery(FLOCAL_HOST, URL, null, ProviderEnum.BINARY);
-        return response.getStream();
-    }
+	public static InputStream fetchFile(String URL) throws IOException {
+		BinaryResponse response = (BinaryResponse) ConnectionFactory.doQuery(FLOCAL_HOST, URL, null, ProviderEnum.BINARY);
+		return response.getStream();
+	}
 
-    /**
-     * This method sends given message to forum. If something fails, an exception is thrown.
-     *
-     * @param session
-     * @param message
-     * @throws FLException
-     */
-    public static void sendMessage(FLSession session, FLMessage parent, String message) throws FLException {
-        /* curl
-         'http://forumbgz.ru/addpost.php?showlite='
+	/**
+	 * This method sends given message to forum. If something fails, an exception is thrown.
+	 *
+	 * @param session
+	 * @param message
+	 * @throws FLException
+	 */
+	public static void sendMessage(FLSession session, FLMessage parent, String message) throws FLException {
+		/* curl
+		 'http://forumbgz.ru/addpost.php?showlite='
          Cat=
          page=
          sb=
@@ -528,26 +528,26 @@ public class FLDataLoader {
          Icon=book.gif
          Body=102
          postdata_protection_key=:('*/
-        try {
-            String URL = "/addpost.php?showlite=sl";
+		try {
+			String URL = "/addpost.php?showlite=sl";
 
-            FLDataConfiguration config = getProtectionKey(session);
+			FLDataConfiguration config = getProtectionKey(session);
 
-            Map<String, String> messageData = new TreeMap<String, String>();
-            messageData.put("src", parent.getThreadData().src);
-            messageData.put("Main", String.valueOf(parent.getThreadData().getID()));
-            messageData.put("Parent", String.valueOf(parent.getID()));
-            messageData.put("Subject", "Subject");//TODO
-            messageData.put("Body", message);
-            messageData.put("postdata_protection_key", config.POST_PROTECTION_KEY);
+			Map<String, String> messageData = new TreeMap<String, String>();
+			messageData.put("src", parent.getThreadData().src);
+			messageData.put("Main", String.valueOf(parent.getThreadData().getID()));
+			messageData.put("Parent", String.valueOf(parent.getID()));
+			messageData.put("Subject", "Subject");//TODO
+			messageData.put("Body", message);
+			messageData.put("postdata_protection_key", config.POST_PROTECTION_KEY);
 
-            HTMLResponse rdr = (HTMLResponse) ConnectionFactory.doQuery(FLOCAL_HOST, URL, session.getSessionCookies(), messageData,
-                    config.encoding, ProviderEnum.HTML);
-            System.err.print(rdr.toString());
-            System.err.print(rdr.getAll(".lighttable > td").get(0).toString());
-            return;
-        } catch (IOException e) {
-            throw new FLException("Failed to retrieve data", e.getMessage());
-        }
-    }
+			HTMLResponse rdr = (HTMLResponse) ConnectionFactory.doQuery(FLOCAL_HOST, URL, session.getSessionCookies(), messageData,
+					config.encoding, ProviderEnum.HTML);
+			System.err.print(rdr.toString());
+			System.err.print(rdr.getAll(".lighttable > td").get(0).toString());
+			return;
+		} catch (IOException e) {
+			throw new FLException("Failed to retrieve data", e.getMessage());
+		}
+	}
 }

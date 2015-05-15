@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-<item name="nameView" type="id"/><item name="boardList" type="id"/><item name="threadListView" type="id"/><item name="threadEntryText" type="id"/>
-    <item name="postEntryText" type="id"/><item name="postListView" type="id"/><item name="postEntryAuthor" type="id"/><item name="postEntryAvatar" type="id"/><item name="postEntryDate" type="id"/>
+    <item name="nameView" type="id"/>
+    <item name="boardList" type="id"/>
+    <item name="threadListView" type="id"/>
+    <item name="threadEntryText" type="id"/>
+    <item name="postEntryText" type="id"/>
+    <item name="postListView" type="id"/>
+    <item name="postEntryAuthor" type="id"/>
+    <item name="postEntryAvatar" type="id"/>
+    <item name="postEntryDate" type="id"/>
 </resources>
