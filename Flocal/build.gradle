@@ -40,7 +40,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 19
         versionCode getVersionCode()
-        versionName "0.2." + (getVersionCode() - 68) + getBranch();
+        versionName "0.3." + (getVersionCode() - 86) + getBranch();
     }
     buildTypes {
         release {
