@@ -26,6 +26,7 @@ import ru.ith.lib.webcrawl.providers.HTMLResponse;
 import ru.ith.lib.webcrawl.providers.ProviderEnum;
 
 /**
+ * This class is responsible for interaction with forum scripts.
  * Created by infthi on 6/26/13.
  */
 public class FLDataLoader {
@@ -435,7 +436,7 @@ public class FLDataLoader {
                     continue;
 
                 FLMessage message = new FLMessage(userName,
-                        postHtml.toString(), caption, postDate, rating, messageID, thread.getID());
+                        postHtml.toString(), caption, postDate, rating, messageID, thread);
                 result.add(message);
             }
 
@@ -533,10 +534,10 @@ public class FLDataLoader {
             FLDataConfiguration config = getProtectionKey(session);
 
             Map<String, String> messageData = new TreeMap<String, String>();
-            messageData.put("src", "alt");//TODO:
-            messageData.put("Main", String.valueOf(parent.getMainID()));
+            messageData.put("src", parent.getThreadData().src);
+            messageData.put("Main", String.valueOf(parent.getThreadData().getID()));
             messageData.put("Parent", String.valueOf(parent.getID()));
-            messageData.put("Subject", "Subject");
+            messageData.put("Subject", "Subject");//TODO
             messageData.put("Body", message);
             messageData.put("postdata_protection_key", config.POST_PROTECTION_KEY);
 

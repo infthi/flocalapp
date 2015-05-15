@@ -10,18 +10,18 @@ public class FLMessage {
 	private final String date;
 	private final int rating;
 
-    private final long mainID; //ID of thread-starting message. Required for responce.
 	private final long ID;
+	private final FLThreadHeader thread;
 
 	public FLMessage(String userName, String text, String caption, String date,
-			int rating, long ID, long mainID) {
+			int rating, long ID, FLThreadHeader thread) {
 		this.userName = userName;
 		this.text = text;
 		this.caption = caption;
 		this.date = date;
 		this.rating = rating;
 		this.ID = ID;
-        this.mainID = mainID;
+		this.thread = thread;
 	}
 
 	@Override
@@ -30,9 +30,9 @@ public class FLMessage {
 				+ rating + "]\n" + text;
 	}
 
-    public long getMainID() {
-        return mainID;
-    }
+	public FLThreadHeader getThreadData(){
+		return thread;
+	}
 
     public long getID() {
         return ID;
