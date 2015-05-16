@@ -141,18 +141,21 @@ public class PostView extends FrameLayout {
 		switch (postCutCapability) {
 			case UNAVAILABLE:
 				((ImageButton) findViewById(R.id.button_expand)).setEnabled(false);
+				((ImageView) findViewById(R.id.postCollapseGradient)).setVisibility(GONE);
 				return;
 			case COLLAPSED:
 				postCutCapability = CUT_CAPABILITY.EXPANDED;
 				newMaxHeight = maxPossibleHeight;
 				((ImageButton) findViewById(R.id.button_expand)).setEnabled(true);
 				((ImageButton) findViewById(R.id.button_expand)).setImageResource(android.R.drawable.ic_menu_revert);
+				((ImageView) findViewById(R.id.postCollapseGradient)).setVisibility(INVISIBLE);
 				break;
 			case EXPANDED:
 				postCutCapability = CUT_CAPABILITY.COLLAPSED;
 				newMaxHeight = Settings.instance.getPostCutLimit();
 				((ImageButton) findViewById(R.id.button_expand)).setEnabled(true);
 				((ImageButton) findViewById(R.id.button_expand)).setImageResource(android.R.drawable.ic_menu_more);
+				((ImageView) findViewById(R.id.postCollapseGradient)).setVisibility(VISIBLE);
 				break;
 			default:
 				Log.d(VIEW_LOG_TAG, "Expand post called while post is inexpandable");
