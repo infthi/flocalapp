@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.webcrawl.providers.BinaryResponse;
@@ -20,48 +21,23 @@ public abstract class WebResponseReader {
 		this.stream = stream;
 	}
 
-	public static WebResponseReader make(InputStream stream, ProviderEnum provider)
+	public static WebResponseReader make(HttpURLConnection conn, ProviderEnum provider)
 			throws IOException {
-		int bufSize = 20;
-		byte[] headerBuf = new byte[bufSize];
-		boolean isHeaderBlock = true;
-		int b;
-		WebResponseMetadata metaData = new WebResponseMetadata();
-		while (isHeaderBlock) {
-			int index = 0;
-			while ((b = stream.read()) != -1) {
-				if (b == '\r')
-					continue;
-				if (b == '\n')
-					break;
-				headerBuf[index++] = (byte) b;
-				if (index == bufSize) {
-					byte[] newBuf = new byte[bufSize *= 2];
-					System.arraycopy(headerBuf, 0, newBuf, 0, index);
-					headerBuf = newBuf;
-				}
-			}
-			if (index == 0)
-				isHeaderBlock = false;
-			else
-				metaData.processHeader(new String(headerBuf, 0, index, "ASCII"));
-		}
-		Log.d(FLDataLoader.FLOCAL_APP_SIGN, "Header parsed");
-		switch (metaData.getCode()) {
-			case WebResponseMetadata.HTTP_OK:
+		switch (conn.getResponseCode()) {
+			case 200:
 				break;
-			case WebResponseMetadata.MOVED_PERMANENTLY:
-//			try {
-//				URI location = metaData.getRedirect();
-//			} catch (URISyntaxException e) {
-//				throw new IOException("Server provided wrong redirection");
-//			}
 			default:
-				throw new IOException("Unsupported server responce code: " + metaData.getCode());
+				throw new IOException("Unsupported server responce code: " + conn.getResponseCode());
 		}
 
-		if (metaData.getContentLength() != -1)
-			stream = new limitedStream(stream, metaData.getContentLength());
+		WebResponseMetadata metaData = new WebResponseMetadata(conn);
+		Log.d(FLDataLoader.FLOCAL_APP_SIGN, "Header parsed");
+
+		InputStream stream = conn.getInputStream();
+
+//		if (conn.getContentLength()>-1){
+//			stream = new limitedStream(stream, conn.getContentLength());
+//		}
 
 		switch (provider) {
 			case HTML:

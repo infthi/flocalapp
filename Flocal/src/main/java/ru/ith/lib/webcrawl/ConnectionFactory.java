@@ -3,30 +3,28 @@ package ru.ith.lib.webcrawl;
 import android.util.Log;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.webcrawl.providers.ProviderEnum;
 
 public class ConnectionFactory {
-	private static final ConcurrentHashMap<String, Socket> keepAliveSockets = new ConcurrentHashMap<String, Socket>();
+	private static boolean useHTTPS = true;
 
-	private static Socket getConnection(String host, String url) throws IOException {
-		String socketKey = host + ":" + 80;
-		Socket result;
-		if ((result = keepAliveSockets.remove(socketKey)) != null) {
-			if (!result.isClosed()) {
-				Log.d(FLDataLoader.FLOCAL_APP_SIGN, "reusing socket :) " + url);
-				return result;
-			}
-		}
-		Log.d(FLDataLoader.FLOCAL_APP_SIGN, "created new socket :( " + url);
-		return new Socket(host, 80);
+	private static HttpURLConnection getConnection(String host, String request) throws IOException {
+		//TODO: test if HTTPS connection succeeds and revert to HTTP is required
+		URL url = new URL("https", host, request);
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+		connection.setReadTimeout(10000);
+		connection.setConnectTimeout(15000);
+		connection.setDoInput(true);
+
+		return connection;
 	}
 
 	public static WebResponseReader doQuery(String host, String url, Map<String, String> cookies, ProviderEnum requestType) throws IOException {
@@ -44,7 +42,7 @@ public class ConnectionFactory {
 				requestString.append(URLEncoder.encode(element.getValue(), postEncoding));
 				requestString.append('&');
 			}
-			postDataB = requestString.toString().getBytes("ASCII");
+			postDataB = requestString.toString().getBytes("ASCII"); //TODO: check if forum accepts UTF
 		}
 		return doQueryMain(host, url, cookies, postDataB, "application/x-www-form-urlencoded", requestType);
 	}
@@ -59,48 +57,33 @@ public class ConnectionFactory {
 
 	public static WebResponseReader doQueryMain(final String host, String url, Map<String, String> cookies,
 												byte[] postData, String postContentType, ProviderEnum requestType) throws IOException {
-		StringBuilder message = new StringBuilder();
-
 		Log.d(FLDataLoader.FLOCAL_APP_SIGN, url);
-		message.append(method(requestType, postData)).append(" ").append(url).append(" HTTP/1.0\r\n");
+
+		HttpURLConnection conn = getConnection(host, url);
+		conn.setRequestMethod(method(requestType, postData));
 
 		if ((cookies != null) && (!cookies.isEmpty())) {
-			StringBuilder cookieString = new StringBuilder("Cookie: ");
+			StringBuilder cookieString = new StringBuilder();
 			for (Map.Entry<String, String> cookie : cookies.entrySet()) {
 				cookieString.append(cookie.getKey()).append('=').append(cookie.getValue()).append("; ");
 			}
-			cookieString.append("\r\n");
-			message.append(cookieString.toString());
+			conn.setRequestProperty("Cookie", cookieString.toString());
 		}
-		message.append("Connection: keep-alive\r\n");
 
 		if (postData != null) {
-			message.append("Content-Length: ").append(postData.length).append("\r\n");
-			message.append("Content-Type: ").append(postContentType).append("\r\n");
-		}
-		message.append("\r\n");
+			conn.setDoOutput(true);
+			conn.setFixedLengthStreamingMode(postData.length);
+			conn.setRequestProperty("Content-Type", String.valueOf(postContentType));
 
-		final Socket listener = getConnection(host, url);
-		OutputStream os = listener.getOutputStream();
-		InputStream in = listener.getInputStream();
+			OutputStream os = conn.getOutputStream();
+//			BufferedWriter writer = new BufferedWriter(
+//					new OutputStreamWriter(os, "UTF-8"));
 
-		os.write(message.toString().getBytes("ASCII"));
-		if (postData != null) {
 			os.write(postData);
+			os.flush();
 		}
-		os.flush();
-		WebResponseReader result = WebResponseReader.make(in, requestType);
-		if (result.metaData.getContentLength() != -1) {
-			if (result.stream instanceof limitedStream) {
-				((limitedStream) result.stream).addFinalizer(new Runnable() {
-					@Override
-					public void run() {
-						if (!listener.isClosed())
-							keepAliveSockets.put(host + ":" + 80, listener);
-					}
-				});
-			}
-		}
+
+		WebResponseReader result = WebResponseReader.make(conn, requestType);
 		return result;
 	}
 }
