@@ -1,0 +1,9 @@
+Use standard HTTP(s) access library
+Use standard forum API where possible
+Private messages
+Rating
+Rich editor (?)
+Support for images in posts
+Upload
+Search
+
