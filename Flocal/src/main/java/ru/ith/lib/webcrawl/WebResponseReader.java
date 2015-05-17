@@ -1,12 +1,10 @@
 package ru.ith.lib.webcrawl;
 
-import android.util.Log;
-
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 
-import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.webcrawl.providers.BinaryResponse;
 import ru.ith.lib.webcrawl.providers.HEADResponse;
 import ru.ith.lib.webcrawl.providers.HTMLResponse;
@@ -27,17 +25,18 @@ public abstract class WebResponseReader {
 			case 200:
 				break;
 			default:
-				throw new IOException("Unsupported server responce code: " + conn.getResponseCode());
+				throw new IOException("Unsupported server response code: " + conn.getResponseCode());
 		}
 
 		WebResponseMetadata metaData = new WebResponseMetadata(conn);
-		Log.d(FLDataLoader.FLOCAL_APP_SIGN, "Header parsed");
 
 		InputStream stream = conn.getInputStream();
 
 //		if (conn.getContentLength()>-1){
 //			stream = new limitedStream(stream, conn.getContentLength());
 //		}
+
+		stream = new BufferedInputStream(stream);
 
 		switch (provider) {
 			case HTML:

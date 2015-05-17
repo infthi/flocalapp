@@ -13,7 +13,7 @@ import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.webcrawl.providers.ProviderEnum;
 
 public class ConnectionFactory {
-	private static boolean useHTTPS = true;
+	private static volatile boolean useHTTPS = true;
 
 	private static HttpURLConnection getConnection(String host, String request) throws IOException {
 		//TODO: test if HTTPS connection succeeds and revert to HTTP is required
@@ -23,6 +23,7 @@ public class ConnectionFactory {
 		connection.setReadTimeout(10000);
 		connection.setConnectTimeout(15000);
 		connection.setDoInput(true);
+		connection.setInstanceFollowRedirects(true);
 
 		return connection;
 	}
