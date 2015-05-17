@@ -9,7 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.ImageView;
@@ -22,7 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,19 +30,22 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 
-import ru.ith.android.flocal.engine.SessionContainer;
 import ru.ith.lib.flocal.FLDataLoader;
-import ru.ith.lib.flocal.data.AvatarMetaData;
 
 /**
  * Created by adminfthi on 28.06.13.
  */
 public class ImageFactory {
+	private static final String AVATAR_DEBUG_TAG = FLDataLoader.FLOCAL_APP_SIGN + "/avatars";
+	private static final boolean AVATAR_DEBUG_EXTENDED = false;
 	public final float dpK;
 	final SQLiteDatabase avatarDB;
 	final SQLiteDatabase uploadDB;
 	private final Activity context;
 	private Map<String, Reference<Drawable>> avatarCache = new HashMap<String, Reference<Drawable>>();
+	/**
+	 * For each user: list of imageviews we must draw his avatar on when his avatar is loaded
+	 */
 	private Map<String, List<ImageView>> waiters = new TreeMap<String, List<ImageView>>();
 
 	public ImageFactory(Activity context) {
@@ -113,20 +116,21 @@ public class ImageFactory {
 			} else {
 				Drawable avatar = ref.get();
 				if (avatar != null) {
-					Log.v(FLDataLoader.FLOCAL_APP_SIGN, "got from mem-cache for " + user);
+					Log.v(AVATAR_DEBUG_TAG, "got from mem-cache for " + user);
 					drawAvatar(target, avatar);
 					return;
 				}
 			}
 		}
-		Log.v(FLDataLoader.FLOCAL_APP_SIGN, "forced to load for " + user);
+		Log.v(AVATAR_DEBUG_TAG, "No entry in mem-cache for " + user);
+		Log.v(AVATAR_DEBUG_TAG, "Mem-cache: " + TextUtils.join(",", avatarCache.keySet()));
 //        Drawable loading = context.getResources().getDrawable(R.drawable.spinner_background);
 		drawAvatar(target, null);
 		List<ImageView> avatarWaiters = waiters.get(user);
 		if (avatarWaiters == null) {
 			avatarWaiters = new LinkedList<ImageView>();
 			waiters.put(user, avatarWaiters);
-			new avatarLoaderTask(user, this).execute();
+			new AvatarLoaderTask(user, this).execute();
 		}
 		avatarWaiters.add(target);
 	}
@@ -137,23 +141,23 @@ public class ImageFactory {
 	}
 
 	public synchronized void avatarLoaded(String user, final Drawable avatar) {
-		Log.v(FLDataLoader.FLOCAL_APP_SIGN, "loaded for " + user + ": " + avatar);
+		Log.v(AVATAR_DEBUG_TAG, "Loaded avatar for " + user + ": " + avatar);
 		if (avatar != null)
-			avatarCache.put(user, new WeakReference<Drawable>(avatar));
+			avatarCache.put(user, new SoftReference<Drawable>(avatar));
 		else
 			avatarCache.put(user, null);
-		final List<ImageView> victims = waiters.get(user);
+		final List<ImageView> victims = waiters.remove(user);
 		if (victims == null)
 			return;
-		for (final ImageView view : victims) {
-			context.runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
+
+		context.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				for (ImageView view : victims) {
 					drawAvatar(view, avatar);
 				}
-			});
-		}
-		waiters.put(user, null);
+			}
+		});
 	}
 
 	public Drawable loadFromCache(String cachedFileName) {
@@ -210,32 +214,30 @@ public class ImageFactory {
 			// Get current dimensions AND the desired bounding box
 			width = bitmap.getWidth();
 			height = bitmap.getHeight();
-			Log.d(FLDataLoader.FLOCAL_APP_SIGN, "\n\n\n--------------------------------");
-			Log.d(FLDataLoader.FLOCAL_APP_SIGN, "original width = " + Integer.toString(width));
-			Log.d(FLDataLoader.FLOCAL_APP_SIGN, "original height = " + Integer.toString(height));
-			Log.d(FLDataLoader.FLOCAL_APP_SIGN, "bounding = " + Integer.toString(bounding));
-
 			// Determine how much to scale: the dimension requiring less scaling is
 			// closer to the its side. This way the image always stays inside your
 			// bounding box AND either x/y axis touches it.
 			float xScale = ((float) bounding) / width;
 			float yScale = ((float) bounding) / height;
 			float scale = (xScale <= yScale) ? xScale : yScale;
-			Log.d(FLDataLoader.FLOCAL_APP_SIGN, "xScale = " + Float.toString(xScale));
-			Log.d(FLDataLoader.FLOCAL_APP_SIGN, "yScale = " + Float.toString(yScale));
-			Log.d(FLDataLoader.FLOCAL_APP_SIGN, "scale = " + Float.toString(scale));
-
 			// Create a matrix for the scaling and add the scaling data
 			Matrix matrix = new Matrix();
 			matrix.postScale(scale, scale);
 
 			// Create a new bitmap and convert it to a format understood by the ImageView
 			Bitmap scaledBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
-			width = scaledBitmap.getWidth(); // re-use
-			height = scaledBitmap.getHeight(); // re-use
 			BitmapDrawable result = new BitmapDrawable(scaledBitmap);
-			Log.d(FLDataLoader.FLOCAL_APP_SIGN, "scaled width = " + Integer.toString(width));
-			Log.d(FLDataLoader.FLOCAL_APP_SIGN, "scaled height = " + Integer.toString(height));
+			if (AVATAR_DEBUG_EXTENDED) {
+				Log.d(AVATAR_DEBUG_TAG, "\n\n\n--------------------------------");
+				Log.d(AVATAR_DEBUG_TAG, "original width = " + Integer.toString(width));
+				Log.d(AVATAR_DEBUG_TAG, "original height = " + Integer.toString(height));
+				Log.d(AVATAR_DEBUG_TAG, "bounding = " + Integer.toString(bounding));
+				Log.d(AVATAR_DEBUG_TAG, "xScale = " + Float.toString(xScale));
+				Log.d(AVATAR_DEBUG_TAG, "yScale = " + Float.toString(yScale));
+				Log.d(AVATAR_DEBUG_TAG, "scale = " + Float.toString(scale));
+				Log.d(AVATAR_DEBUG_TAG, "scaled width = " + Integer.toString(scaledBitmap.getWidth()));
+				Log.d(AVATAR_DEBUG_TAG, "scaled height = " + Integer.toString(scaledBitmap.getHeight()));
+			}
 
 			// Apply the scaled bitmap
 			target.setImageDrawable(result);
@@ -247,92 +249,5 @@ public class ImageFactory {
 		LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) target.getLayoutParams();
 		params.width = bounding;
 		params.height = height;
-	}
-}
-
-class avatarLoaderTask extends AsyncTask<Void, Void, Drawable> {
-
-	private String mUser;
-	private ImageFactory mImageFactory;
-
-	public avatarLoaderTask(String user, ImageFactory imageFactory) {
-		mUser = user;
-		mImageFactory = imageFactory;
-	}
-
-	@Override
-	protected Drawable doInBackground(Void... params) {
-		boolean useCachedVersion = false;
-		AvatarMetaData meta = null;
-		String whereClause = AvatarCacheDB.ROW_USER + "= ?";
-		String[] whereValues = new String[]{mUser};
-		try {
-			//first: check out cache
-			Cursor c = null;
-			try {
-				c = mImageFactory.avatarDB.query(AvatarCacheDB.AVATAR_TABLE, new String[]{AvatarCacheDB.ROW_CACHED_FILE, AvatarCacheDB.ROW_LAST_CHECKED}, whereClause, whereValues, null, null, null);
-				if (c.getCount() > 0) {
-					c.moveToNext();
-					String cachedFileName = c.getString(0);
-					Long cachedAt = c.getLong(1);
-					if (cachedAt >= System.currentTimeMillis() - 2 * 7 * 86400 * 1000) { //two-week invalidation
-						useCachedVersion = true;
-					} else {
-						meta = FLDataLoader.getAvatarMetadata(SessionContainer.getSessionInstance(), mUser, false);
-						if (meta.URL == null) {
-							if (cachedFileName == null)
-								useCachedVersion = true;
-						} else if (meta.lastModified < cachedAt) {
-							useCachedVersion = true;
-						}
-					}
-					if (useCachedVersion) {
-						if (cachedFileName == null)
-							return null;
-						Drawable result = mImageFactory.loadFromCache(cachedFileName);
-						if (result != null) {
-							ContentValues updatedDate = new ContentValues();
-							updatedDate.put(AvatarCacheDB.ROW_LAST_CHECKED, System.currentTimeMillis());
-							mImageFactory.avatarDB.update(AvatarCacheDB.AVATAR_TABLE, updatedDate, whereClause, whereValues);
-							return result;
-						}
-					}
-					c.close();
-					c = null;
-					mImageFactory.avatarDB.delete(AvatarCacheDB.AVATAR_TABLE, whereClause, whereValues);
-				}
-			} finally {
-				if (c != null)
-					c.close();
-			}
-
-			if (meta == null)
-				meta = FLDataLoader.getAvatarMetadata(SessionContainer.getSessionInstance(), mUser, true);
-
-			String cacheID = null;
-			if (meta.URL != null) {
-				InputStream newAvatarStream = null;
-				newAvatarStream = FLDataLoader.fetchAvatar(meta);
-				cacheID = mImageFactory.saveToCache(newAvatarStream, "avatar");
-			}
-
-			ContentValues newCachedAvatar = new ContentValues();
-			newCachedAvatar.put(AvatarCacheDB.ROW_USER, mUser);
-			newCachedAvatar.put(AvatarCacheDB.ROW_CACHED_FILE, cacheID);
-			newCachedAvatar.put(AvatarCacheDB.ROW_LAST_CHECKED, System.currentTimeMillis());
-			mImageFactory.avatarDB.insert(AvatarCacheDB.AVATAR_TABLE, null, newCachedAvatar);
-
-			if (cacheID == null)
-				return null;
-
-			return mImageFactory.loadFromCache(cacheID);
-		} catch (Exception e1) {
-			return null;
-		}
-	}
-
-	@Override
-	protected void onPostExecute(Drawable drawable) {
-		mImageFactory.avatarLoaded(mUser, drawable);
 	}
 }
