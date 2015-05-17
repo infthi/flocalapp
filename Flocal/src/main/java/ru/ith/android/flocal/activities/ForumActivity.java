@@ -26,8 +26,7 @@ import ru.ith.lib.flocal.FLException;
  */
 public abstract class ForumActivity extends Activity {
 
-
-	private volatile Timer refresher = null;
+	private static final Timer refresher = new Timer("Thread_list_refresher", true);
 	private volatile TimerTask refreshTask = null;
 
 	@Override
@@ -148,8 +147,10 @@ public abstract class ForumActivity extends Activity {
 	}
 
 	protected final void refreshWrap() {
-		if (refreshTask != null)
+		if (refreshTask != null) {
 			refreshTask.cancel();
+			refreshTask = null;
+		}
 		try {
 			refresh();
 		} catch (final RuntimeException e) {
@@ -159,7 +160,7 @@ public abstract class ForumActivity extends Activity {
 					e.printStackTrace();
 					View status = findViewById(R.id.firstLoadingStatus);
 					if (status != null)
-						((TextView) status).setText(e.getMessage());
+						((TextView) status).setText("Error occurred");
 					Toast.makeText(ForumActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
 				}
 			});
@@ -169,9 +170,11 @@ public abstract class ForumActivity extends Activity {
 	}
 
 	private synchronized void makeRefreshTask(long timeOut) {
-		if (refresher == null) {
-			refresher = new Timer("Thread_list_refresher", true);
+		if (refreshTask != null) {
+			refreshTask.cancel();
+			refresher.purge();
 		}
+
 		refreshTask = new TimerTask() {
 			@Override
 			public void run() {
@@ -195,8 +198,8 @@ public abstract class ForumActivity extends Activity {
 	protected synchronized void onPause() {
 		super.onPause();
 		refreshTask.cancel();
+		refreshTask = null;
 		refresher.purge();
-		refresher = null;
 	}
 
 	public final void hideLoadingProgressBar() {

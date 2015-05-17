@@ -33,6 +33,11 @@ public class FLDataLoader {
 	public static final String FLOCAL_HOST = "forumbgz.ru";
 	public static final String FLOCAL_APP_SIGN = "forum-local";
 
+	private static HTMLResponse doQuery(String url, FLSession session) throws IOException {
+		return (HTMLResponse) ConnectionFactory.doQuery(FLOCAL_HOST, url,
+				(session == null) ? null : session.getSessionCookies(), ProviderEnum.HTML);
+	}
+
 	private static FLDataConfiguration getProtectionKey(FLSession session) throws FLException {
 		HTMLResponse rdr = null;
 		try {
@@ -75,11 +80,6 @@ public class FLDataLoader {
 		} catch (IOException e) {
 			throw new FLException("Failed to login", e.getMessage());
 		}
-	}
-
-	private static HTMLResponse doQuery(String url, FLSession session) throws IOException {
-		return (HTMLResponse) ConnectionFactory.doQuery(FLOCAL_HOST, url,
-				(session == null) ? null : session.getSessionCookies(), ProviderEnum.HTML);
 	}
 
 	public static void logout(FLSession session) throws FLException {

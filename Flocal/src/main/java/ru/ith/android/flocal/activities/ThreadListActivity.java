@@ -76,6 +76,12 @@ public class ThreadListActivity extends ForumActivity {
 
 	@Override
 	void refresh() {
+		/**
+		 * TODO:
+		 * First page of a board is simultaneously loaded by activity itself (to 'refresh' data)
+		 * and by endless adapter (to 'load' data)
+		 * Better fix this, because it takes two queries instead of one to display thread list
+		 */
 		LinkedList<FLThreadHeader> firstPage = null;
 		try {
 			firstPage = FLDataLoader.listThreads(SessionContainer.getSessionInstance(), board, 0);
