@@ -27,8 +27,8 @@ import ru.ith.lib.flocal.FLException;
 public abstract class ForumActivity extends Activity {
 
 
-	private Timer refresher = null;
-	private TimerTask refreshTask = null;
+	private volatile Timer refresher = null;
+	private volatile TimerTask refreshTask = null;
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -168,7 +168,10 @@ public abstract class ForumActivity extends Activity {
 		}
 	}
 
-	private void makeRefreshTask(long timeOut) {
+	private synchronized void makeRefreshTask(long timeOut) {
+		if (refresher == null) {
+			refresher = new Timer("Thread_list_refresher", true);
+		}
 		refreshTask = new TimerTask() {
 			@Override
 			public void run() {
@@ -183,17 +186,17 @@ public abstract class ForumActivity extends Activity {
 	abstract long getRefreshPeriod();
 
 	@Override
-	protected void onResume() {
+	protected synchronized void onResume() {
 		super.onResume();
-		refresher = new Timer("Thread_list_refresher", true);
-		makeRefreshTask(0);
+		makeRefreshTask(0);// == NOW
 	}
 
 	@Override
-	protected void onPause() {
+	protected synchronized void onPause() {
 		super.onPause();
 		refreshTask.cancel();
 		refresher.purge();
+		refresher = null;
 	}
 
 	public final void hideLoadingProgressBar() {
