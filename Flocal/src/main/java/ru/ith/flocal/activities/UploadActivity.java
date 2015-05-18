@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.activities;
+package ru.ith.flocal.activities;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -11,7 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import ru.ith.android.flocal.R;
+import ru.ith.flocal.R;
 
 public class UploadActivity extends Activity {
 

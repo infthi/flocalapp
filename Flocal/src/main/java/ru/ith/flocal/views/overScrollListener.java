@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.views;
+package ru.ith.flocal.views;
 
 /**
  * Created by infthi on 6/26/13.

@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.engine;
+package ru.ith.flocal.engine;
 
 import android.content.SharedPreferences;
 

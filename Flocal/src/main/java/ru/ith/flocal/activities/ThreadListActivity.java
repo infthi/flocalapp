@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.activities;
+package ru.ith.flocal.activities;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -13,11 +13,11 @@ import android.widget.SpinnerAdapter;
 
 import java.util.LinkedList;
 
-import ru.ith.android.flocal.R;
-import ru.ith.android.flocal.engine.SessionContainer;
-import ru.ith.android.flocal.engine.ThreadListAdapter;
-import ru.ith.android.flocal.util.ForumDataAccessHelper;
-import ru.ith.android.flocal.util.Settings;
+import ru.ith.flocal.R;
+import ru.ith.flocal.engine.SessionContainer;
+import ru.ith.flocal.engine.ThreadListAdapter;
+import ru.ith.flocal.util.ForumDataAccessHelper;
+import ru.ith.flocal.util.Settings;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLBoard;

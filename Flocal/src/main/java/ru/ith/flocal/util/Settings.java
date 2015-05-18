@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.util;
+package ru.ith.flocal.util;
 
 /**
  * This class is responsible for app settings.

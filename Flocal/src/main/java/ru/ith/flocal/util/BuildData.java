@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.util;
+package ru.ith.flocal.util;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;

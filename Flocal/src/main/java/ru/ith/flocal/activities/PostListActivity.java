@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.activities;
+package ru.ith.flocal.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,12 +8,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 
-import ru.ith.android.flocal.R;
-import ru.ith.android.flocal.engine.PostListAdapter;
-import ru.ith.android.flocal.io.ImageFactory;
-import ru.ith.android.flocal.views.OverScrollableList;
-import ru.ith.android.flocal.views.PostView;
-import ru.ith.android.flocal.views.overScrollListener;
+import ru.ith.flocal.R;
+import ru.ith.flocal.engine.PostListAdapter;
+import ru.ith.flocal.io.ImageFactory;
+import ru.ith.flocal.views.OverScrollableList;
+import ru.ith.flocal.views.PostView;
+import ru.ith.flocal.views.overScrollListener;
 import ru.ith.lib.flocal.data.FLMessage;
 import ru.ith.lib.flocal.data.FLThreadHeader;
 

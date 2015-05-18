@@ -1,4 +1,4 @@
-package ru.ith.android.flocal;
+package ru.ith.flocal;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -19,9 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ru.ith.android.flocal.activities.BoardListActivity;
-import ru.ith.android.flocal.activities.PostListActivity;
-import ru.ith.android.flocal.activities.ThreadListActivity;
+import ru.ith.flocal.activities.BoardListActivity;
+import ru.ith.flocal.activities.PostListActivity;
+import ru.ith.flocal.activities.ThreadListActivity;
 
 public class LinkHandlerActivity extends Activity {
 	TextView statusView;

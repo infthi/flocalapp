@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.views;
+package ru.ith.flocal.views;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -14,7 +14,6 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -27,12 +26,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import ru.ith.android.flocal.R;
-import ru.ith.android.flocal.activities.PostListActivity;
-import ru.ith.android.flocal.io.ImageFactory;
-import ru.ith.android.flocal.util.Settings;
-import ru.ith.android.flocal.views.util.message.ImageLoadTask;
-import ru.ith.android.flocal.views.util.message.PostPostTask;
+import ru.ith.flocal.R;
+import ru.ith.flocal.activities.PostListActivity;
+import ru.ith.flocal.io.ImageFactory;
+import ru.ith.flocal.util.Settings;
+import ru.ith.flocal.views.util.message.ImageLoadTask;
+import ru.ith.flocal.views.util.message.PostPostTask;
 import ru.ith.lib.flocal.data.FLMessage;
 
 /**
@@ -88,20 +87,20 @@ public class PostView extends FrameLayout {
 	}
 
 	private void initializeToolbar() {
-		((ImageButton) findViewById(R.id.button_upvote)).setOnClickListener(new OnClickListener() {
+		findViewById(R.id.button_upvote).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				Toast.makeText(getContext(), "Upvote not implemented yet!", Toast.LENGTH_LONG).show();
 				((ImageButton) findViewById(R.id.button_upvote)).setImageResource(android.R.drawable.btn_star_big_on);
 			}
 		});
-		((ImageButton) findViewById(R.id.button_reply)).setOnClickListener(new OnClickListener() {
+		findViewById(R.id.button_reply).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				showReplyWindow();
 			}
 		});
-		((ImageButton) findViewById(R.id.button_expand)).setOnClickListener(new OnClickListener() {
+		findViewById(R.id.button_expand).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				toggleExpansion();
@@ -140,22 +139,22 @@ public class PostView extends FrameLayout {
 		int newMaxHeight = -1;
 		switch (postCutCapability) {
 			case UNAVAILABLE:
-				((ImageButton) findViewById(R.id.button_expand)).setEnabled(false);
-				((ImageView) findViewById(R.id.postCollapseGradient)).setVisibility(GONE);
+				findViewById(R.id.button_expand).setEnabled(false);
+				findViewById(R.id.postCollapseGradient).setVisibility(GONE);
 				return;
 			case COLLAPSED:
 				postCutCapability = CUT_CAPABILITY.EXPANDED;
 				newMaxHeight = maxPossibleHeight;
-				((ImageButton) findViewById(R.id.button_expand)).setEnabled(true);
+				findViewById(R.id.button_expand).setEnabled(true);
 				((ImageButton) findViewById(R.id.button_expand)).setImageResource(android.R.drawable.ic_menu_revert);
-				((ImageView) findViewById(R.id.postCollapseGradient)).setVisibility(INVISIBLE);
+				findViewById(R.id.postCollapseGradient).setVisibility(INVISIBLE);
 				break;
 			case EXPANDED:
 				postCutCapability = CUT_CAPABILITY.COLLAPSED;
 				newMaxHeight = Settings.instance.getPostCutLimit();
-				((ImageButton) findViewById(R.id.button_expand)).setEnabled(true);
+				findViewById(R.id.button_expand).setEnabled(true);
 				((ImageButton) findViewById(R.id.button_expand)).setImageResource(android.R.drawable.ic_menu_more);
-				((ImageView) findViewById(R.id.postCollapseGradient)).setVisibility(VISIBLE);
+				findViewById(R.id.postCollapseGradient).setVisibility(VISIBLE);
 				break;
 			default:
 				Log.d(VIEW_LOG_TAG, "Expand post called while post is inexpandable");
@@ -202,13 +201,13 @@ public class PostView extends FrameLayout {
 		reply.setContentView(R.layout.dialog_reply);
 		reply.setTitle(R.string.dialog_reply_title);
 		final EditText edit = ((EditText) reply.findViewById(R.id.replyText));
-		((Button) reply.findViewById(R.id.cancelButton)).setOnClickListener(new OnClickListener() {
+		reply.findViewById(R.id.cancelButton).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				reply.hide();
 			}
 		});
-		((Button) reply.findViewById(R.id.dialogReplyButton)).setOnClickListener(new OnClickListener() {
+		reply.findViewById(R.id.dialogReplyButton).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				String text = edit.getText().toString();

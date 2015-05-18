@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.io;
+package ru.ith.flocal.io;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -7,7 +7,7 @@ import android.os.AsyncTask;
 
 import java.io.InputStream;
 
-import ru.ith.android.flocal.engine.SessionContainer;
+import ru.ith.flocal.engine.SessionContainer;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.data.AvatarMetaData;
 

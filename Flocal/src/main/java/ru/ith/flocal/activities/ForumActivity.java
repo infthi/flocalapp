@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.activities;
+package ru.ith.flocal.activities;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -15,8 +15,8 @@ import android.widget.Toast;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import ru.ith.android.flocal.R;
-import ru.ith.android.flocal.engine.SessionContainer;
+import ru.ith.flocal.R;
+import ru.ith.flocal.engine.SessionContainer;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 

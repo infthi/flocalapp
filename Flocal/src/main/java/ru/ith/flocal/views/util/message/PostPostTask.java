@@ -1,11 +1,11 @@
-package ru.ith.android.flocal.views.util.message;
+package ru.ith.flocal.views.util.message;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
-import ru.ith.android.flocal.engine.SessionContainer;
+import ru.ith.flocal.engine.SessionContainer;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.data.FLMessage;
 

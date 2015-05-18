@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.views.util.message;
+package ru.ith.flocal.views.util.message;
 
 import android.graphics.drawable.Drawable;
 import android.text.style.ImageSpan;

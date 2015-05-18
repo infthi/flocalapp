@@ -36,7 +36,7 @@ android {
     buildToolsVersion '19.1'
 
     defaultConfig {
-        applicationId "ru.ith.android.flocal"
+        applicationId "ru.ith.flocal"
         minSdkVersion 15
         targetSdkVersion 19
         versionCode getVersionCode()

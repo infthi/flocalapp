@@ -1,8 +1,8 @@
-package ru.ith.android.flocal.util;
+package ru.ith.flocal.util;
 
 import java.util.LinkedList;
 
-import ru.ith.android.flocal.engine.SessionContainer;
+import ru.ith.flocal.engine.SessionContainer;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLBoard;

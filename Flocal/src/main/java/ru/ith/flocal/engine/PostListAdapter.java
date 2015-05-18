@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.engine;
+package ru.ith.flocal.engine;
 
 import android.os.AsyncTask;
 import android.view.View;
@@ -18,10 +18,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import ru.ith.android.flocal.R;
-import ru.ith.android.flocal.activities.PostListActivity;
-import ru.ith.android.flocal.io.ImageFactory;
-import ru.ith.android.flocal.views.PostView;
+import ru.ith.flocal.R;
+import ru.ith.flocal.activities.PostListActivity;
+import ru.ith.flocal.io.ImageFactory;
+import ru.ith.flocal.views.PostView;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLMessage;

@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.engine;
+package ru.ith.flocal.engine;
 
 import android.graphics.Typeface;
 import android.text.SpannableString;
@@ -16,8 +16,8 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.TimerTask;
 
-import ru.ith.android.flocal.R;
-import ru.ith.android.flocal.activities.ThreadListActivity;
+import ru.ith.flocal.R;
+import ru.ith.flocal.activities.ThreadListActivity;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLBoard;

@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.views;
+package ru.ith.flocal.views;
 
 import android.content.Context;
 import android.util.AttributeSet;

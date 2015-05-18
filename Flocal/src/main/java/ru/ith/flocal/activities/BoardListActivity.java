@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.activities;
+package ru.ith.flocal.activities;
 
 import android.app.Dialog;
 import android.os.Bundle;
@@ -18,9 +18,9 @@ import android.widget.Toast;
 import java.util.Collections;
 import java.util.List;
 
-import ru.ith.android.flocal.R;
-import ru.ith.android.flocal.engine.SessionContainer;
-import ru.ith.android.flocal.util.BuildData;
+import ru.ith.flocal.R;
+import ru.ith.flocal.engine.SessionContainer;
+import ru.ith.flocal.util.BuildData;
 import ru.ith.lib.flocal.FLDataLoader;
 import ru.ith.lib.flocal.FLException;
 import ru.ith.lib.flocal.data.FLBoard;

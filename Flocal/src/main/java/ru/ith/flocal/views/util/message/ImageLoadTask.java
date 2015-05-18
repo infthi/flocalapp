@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.views.util.message;
+package ru.ith.flocal.views.util.message;
 
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import java.util.TreeMap;
 
-import ru.ith.android.flocal.io.ImageFactory;
+import ru.ith.flocal.io.ImageFactory;
 import ru.ith.lib.flocal.FLDataLoader;
 
 public class ImageLoadTask extends AsyncTask<Void, updateHTMLPack, Void> {

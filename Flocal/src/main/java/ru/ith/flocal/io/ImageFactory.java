@@ -1,4 +1,4 @@
-package ru.ith.android.flocal.io;
+package ru.ith.flocal.io;
 
 import android.app.Activity;
 import android.content.ContentValues;
